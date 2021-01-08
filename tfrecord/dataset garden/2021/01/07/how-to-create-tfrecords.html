@@ -238,9 +238,9 @@ window.onload = wrap_img;
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">project_name</span> <span class="o">=</span> <span class="s1">'cassava-leaf-disease-classification'</span>
-<span class="n">root_path</span>  <span class="o">=</span> <span class="s1">'/content/gdrive/MyDrive/'</span>
+<span class="n">root_path</span>  <span class="o">=</span> <span class="s1">'/content/gdrive/MyDrive/'</span> <span class="k">if</span> <span class="n">GOOGLE</span> <span class="k">else</span> <span class="s1">'/'</span>
 <span class="n">input_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">root_path</span><span class="si">}</span><span class="s1">kaggle/input/</span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s1">/'</span>
-<span class="n">working_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s1">working/'</span>
+<span class="n">working_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s1">working/'</span> <span class="k">if</span> <span class="n">GOOGLE</span> <span class="k">else</span> <span class="s1">'/kaggle/working/'</span>
 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">working_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">working_path</span><span class="p">)</span>
 <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
