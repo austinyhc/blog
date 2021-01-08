@@ -154,6 +154,14 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>In this notebook, I am going to discuss <strong>Tensorflow Records</strong>. Tensorflow recommends to store and read data in TFRecords format. It internally uses <strong>Protocal Buffers</strong> to serialize/deserialize the data and store them in bytes, as it takes less space to hold an ample amount of data and to transfer them as well.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="1%-Better-Everyday">
 <a class="anchor" href="#1%-Better-Everyday" aria-hidden="true"><span class="octicon octicon-link"></span></a>1% Better Everyday<a class="anchor-link" href="#1%-Better-Everyday"> </a>
 </h2>
@@ -277,7 +285,7 @@ window.onload = wrap_img;
 <h1 id="Find-Duplicates">
 <a class="anchor" href="#Find-Duplicates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Find Duplicates<a class="anchor-link" href="#Find-Duplicates"> </a>
 </h1>
-<p>My strategy will pre-generate the four different hash values to represet each image. Therefore instead of comparing <code>480000</code> pixels between images, we use 256 integers for comparison.</p>
+<p>My strategy will firstly pre-generate the four different hash values as the representation of each image. Therefore instead of comparing <code>480000</code> pixels between images, we use 256 integers for comparison.</p>
 
 </div>
 </div>
@@ -443,9 +451,10 @@ Hash: 0x30d83f1f1f1303e3add8660df90306f6d2b2fcbb3377c78770583f1f1f1303e3
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
-    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">calculate_image_hash</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {DEBUG}
+results = []
+for fname in progress_bar(fnames):
+    results.append(calculate_image_hash(fname))
 </pre></div>
 
     </div>
@@ -474,7 +483,7 @@ Hash: 0x30d83f1f1f1303e3add8660df90306f6d2b2fcbb3377c78770583f1f1f1303e3
             }
         </style>
       <progress value="500" class="" max="500" style="width:300px; height:20px; vertical-align: middle;"></progress>
-      100.00% [500/500 00:34&lt;00:00]
+      100.00% [500/500 02:15&lt;00:00]
     </div>
     
 </div>
@@ -502,7 +511,7 @@ Hash: 0x30d83f1f1f1303e3add8660df90306f6d2b2fcbb3377c78770583f1f1f1303e3
 <p></p>
 <div class="flash flash-success">
     <svg class="octicon octicon-checklist octicon octicon-checklist octicon octicon-checklist octicon octicon-checklist octicon octicon-checklist" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M2.5 1.75a.25.25 0 01.25-.25h8.5a.25.25 0 01.25.25v7.736a.75.75 0 101.5 0V1.75A1.75 1.75 0 0011.25 0h-8.5A1.75 1.75 0 001 1.75v11.5c0 .966.784 1.75 1.75 1.75h3.17a.75.75 0 000-1.5H2.75a.25.25 0 01-.25-.25V1.75zM4.75 4a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-4.5zM4 7.75A.75.75 0 014.75 7h2a.75.75 0 010 1.5h-2A.75.75 0 014 7.75zm11.774 3.537a.75.75 0 00-1.048-1.074L10.7 14.145 9.281 12.72a.75.75 0 00-1.062 1.058l1.943 1.95a.75.75 0 001.055.008l4.557-4.45z"></path></svg>
-    <strong>Tip: </strong>The above preprocssing can be paralellize. the only chunk of memory they share is the global list that each job append their output to.
+    <strong>Tip: </strong>The above <code>calculate_image_hash()</code> can run in concurrency to speed up the process. The built-in <code>concurrent.futures</code> library comes to rescue.
 </div>
 
 </div>
@@ -546,7 +555,7 @@ Hash: 0x30d83f1f1f1303e3add8660df90306f6d2b2fcbb3377c78770583f1f1f1303e3
             }
         </style>
       <progress value="500" class="" max="500" style="width:300px; height:20px; vertical-align: middle;"></progress>
-      100.00% [500/500 00:20&lt;00:00]
+      100.00% [500/500 00:21&lt;00:00]
     </div>
     
 </div>
@@ -1170,10 +1179,9 @@ File #14: 1426
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mb</span><span class="p">:</span>
     <span class="n">samples</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">'file'</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Writing TFRecord </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="n">NFILES</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">n_samples</span><span class="si">}</span><span class="s1"> samples'</span><span class="p">)</span>
-    <span class="c1">#print('Id_df%.2i-%i.tfrec'%(i, n_samples))</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">'Id_df</span><span class="si">%.2i</span><span class="s1">-</span><span class="si">%i</span><span class="s1">.tfrec'</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="s1">'Id_df</span><span class="si">%.2i</span><span class="s1">-</span><span class="si">%i</span><span class="s1">.tfrec'</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">))</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">progress_bar</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="n">parent</span><span class="o">=</span><span class="n">mb</span><span class="p">):</span>
             <span class="n">label</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">label</span>
             <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
@@ -1181,6 +1189,8 @@ File #14: 1426
             <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imencode</span><span class="p">(</span><span class="s1">'.jpg'</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">IMWRITE_JPEG_QUALITY</span><span class="p">,</span> <span class="n">IMG_QUALITY</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tostring</span><span class="p">()</span>
             <span class="n">example</span> <span class="o">=</span> <span class="n">serialize_example</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">image_id</span><span class="p">))</span>
             <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">example</span><span class="p">)</span>
+
+    <span class="n">mb</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Finished writing to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">.'</span><span class="p">)</span>
 </pre></div>
 
     </div>
