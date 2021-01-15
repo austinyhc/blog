@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      18 min read
+      12 min read
     
 </span></p>
 
@@ -150,13 +150,7 @@ window.onload = wrap_img;
 <ul>
 <li class="toc-entry toc-h2"><a href="#Building-the-autoencoder">Building the autoencoder </a></li>
 <li class="toc-entry toc-h2"><a href="#Building-the-MLP">Building the MLP </a></li>
-<li class="toc-entry toc-h2"><a href="#Building-a-model">Building a model </a></li>
-</ul>
-</li>
-<li class="toc-entry toc-h1"><a href="#Optimizer">Optimizer </a></li>
-<li class="toc-entry toc-h1"><a href="#Callbacks">Callbacks </a>
-<ul>
-<li class="toc-entry toc-h2"><a href="#Training">Training </a></li>
+<li class="toc-entry toc-h2"><a href="#Defining-and-training-the-autoencoder">Defining and training the autoencoder </a></li>
 <li class="toc-entry toc-h2"><a href="#Running-CV">Running CV </a></li>
 </ul>
 </li>
@@ -203,6 +197,7 @@ window.onload = wrap_img;
 
 <span class="kn">import</span> <span class="nn">dabl</span>
 <span class="kn">import</span> <span class="nn">datatable</span> <span class="k">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">kerastuner</span> <span class="k">as</span> <span class="nn">kt</span>
 
 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Using TensorFlow v</span><span class="si">{</span><span class="n">tf</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1142,18 +1137,19 @@ Kurtosis of resp is: 17.36
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">train_df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="s1">'float64'</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span>
 <span class="n">train_df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">train_df</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">train_df</span> <span class="o">=</span> <span class="n">train_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'weight &gt; 0'</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">train_df</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_1'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.00001</span><span class="p">)</span> <span class="o">&amp;</span>
-                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_2'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.00001</span><span class="p">)</span> <span class="o">&amp;</span>
-                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_3'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.00001</span> <span class="p">)</span> <span class="o">&amp;</span>
-                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_4'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.00001</span> <span class="p">)</span> <span class="o">&amp;</span>
-                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.00001</span> <span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int'</span><span class="p">)</span>
+
+<span class="n">train_df</span><span class="p">[</span><span class="s1">'action'</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_1'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
+                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_2'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
+                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_3'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
+                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp_4'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
+                      <span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">'resp'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int'</span><span class="p">)</span>
 
 <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">train_df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s1">'feature'</span> <span class="ow">in</span> <span class="n">c</span><span class="p">]</span>
-<span class="n">resp_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'resp'</span><span class="p">,</span> <span class="s1">'resp_1'</span><span class="p">,</span> <span class="s1">'resp_2'</span><span class="p">,</span> <span class="s1">'resp_3'</span><span class="p">,</span> <span class="s1">'resp_4'</span><span class="p">]</span>
+<span class="n">resp_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'resp_1'</span><span class="p">,</span> <span class="s1">'resp_2'</span><span class="p">,</span> <span class="s1">'resp_3'</span><span class="p">,</span> <span class="s1">'resp'</span><span class="p">,</span> <span class="s1">'resp_4'</span><span class="p">]</span>
 
 <span class="n">x_train</span> <span class="o">=</span> <span class="n">train_df</span><span class="p">[</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
-<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([(</span><span class="n">train_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.000001</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int'</span><span class="p">)</span> 
-                        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">resp_cols</span><span class="p">])</span><span class="o">.</span><span class="n">T</span> <span class="c1"># Multitarget</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([(</span><span class="n">train_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'int'</span><span class="p">)</span> 
+                        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">resp_cols</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
                         
 <span class="n">f_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
@@ -1168,33 +1164,15 @@ Kurtosis of resp is: 17.36
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Model">
-<a class="anchor" href="#Model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model<a class="anchor-link" href="#Model"> </a>
-</h1>
-<p>The idea of using an encoder is the denoise the data. After many attempts at using a unsupervised autoencoder, the choice landed on a bottleneck encoder as this will preserve the intra-feature relations.</p>
-
-</div>
-</div>
-</div>
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection._split</span> <span class="kn">import</span> <span class="n">_BaseKFold</span><span class="p">,</span> <span class="n">indexable</span><span class="p">,</span> <span class="n">_num_samples</span>
-<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">_deprecate_positional_args</span>
-</pre></div>
-
-    </div>
-</div>
+<p></p>
+<div class="flash">
+    <svg class="octicon octicon-info octicon octicon-info octicon octicon-info octicon octicon-info octicon octicon-info octicon octicon-info octicon octicon-info" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"></path></svg>
+    <strong>Note: </strong>Modified code for <code>class GroupTimeSeriesSplit(_BaseKFold)</code>
 </div>
 
 </div>
-    
-
+</div>
+</div>
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1205,8 +1183,9 @@ Kurtosis of resp is: 17.36
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># modified code for group gaps; source</span>
-<span class="c1"># https://github.com/getgaurav2/scikit-learn/blob/d4a3af5cc9da3a76f0266932644b884c99724c57/sklearn/model_selection/_split.py#L2243</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection._split</span> <span class="kn">import</span> <span class="n">_BaseKFold</span><span class="p">,</span> <span class="n">indexable</span><span class="p">,</span> <span class="n">_num_samples</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="kn">import</span> <span class="n">_deprecate_positional_args</span>
 
 <span class="k">class</span> <span class="nc">PurgedGroupTimeSeriesSplit</span><span class="p">(</span><span class="n">_BaseKFold</span><span class="p">):</span>
     <span class="sd">"""Time Series cross-validator variant with non-overlapping groups.</span>
@@ -1388,6 +1367,17 @@ Kurtosis of resp is: 17.36
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Model">
+<a class="anchor" href="#Model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model<a class="anchor-link" href="#Model"> </a>
+</h1>
+<p>The idea of using an encoder is the denoise the data. After many attempts at using a unsupervised autoencoder, the choice landed on a bottleneck encoder as this will preserve the intra-feature relations.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Building-the-autoencoder">
 <a class="anchor" href="#Building-the-autoencoder" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building the autoencoder<a class="anchor-link" href="#Building-the-autoencoder"> </a>
 </h2>
@@ -1485,333 +1475,14 @@ Kurtosis of resp is: 17.36
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Building-a-model">
-<a class="anchor" href="#Building-a-model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building a model<a class="anchor-link" href="#Building-a-model"> </a>
+<h2 id="Defining-and-training-the-autoencoder">
+<a class="anchor" href="#Defining-and-training-the-autoencoder" aria-hidden="true"><span class="octicon octicon-link"></span></a>Defining and training the autoencoder<a class="anchor-link" href="#Defining-and-training-the-autoencoder"> </a>
 </h2>
 <p>We add gaussian noise with mean and std from training datea. After training we lock the layersfin the encoder from further training.</p>
 
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Optimizer">
-<a class="anchor" href="#Optimizer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Optimizer<a class="anchor-link" href="#Optimizer"> </a>
-</h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Callbacks">
-<a class="anchor" href="#Callbacks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Callbacks<a class="anchor-link" href="#Callbacks"> </a>
-</h1>
-</div>
-</div>
-</div>
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">EarlyStopping</span><span class="p">(</span>
-        <span class="n">monitor</span><span class="o">=</span><span class="s1">'val_loss'</span><span class="p">,</span>
-        <span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">restore_best_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="p">]</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Training">
-<a class="anchor" href="#Training" aria-hidden="true"><span class="octicon octicon-link"></span></a>Training<a class="anchor-link" href="#Training"> </a>
-</h2>
-</div>
-</div>
-</div>
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">autoencoder</span><span class="p">,</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">build_autoencoder</span><span class="p">(</span>
-    <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">noise</span><span class="o">=.</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">autoencoder</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Model: "model_5"
-_________________________________________________________________
-Layer (type)                 Output Shape              Param #   
-=================================================================
-input_3 (InputLayer)         [(None, 130)]             0         
-_________________________________________________________________
-batch_normalization_4 (Batch (None, 130)               520       
-_________________________________________________________________
-gaussian_noise_2 (GaussianNo (None, 130)               0         
-_________________________________________________________________
-dense_4 (Dense)              (None, 640)               83840     
-_________________________________________________________________
-dropout_4 (Dropout)          (None, 640)               0         
-_________________________________________________________________
-decoded (Dense)              (None, 130)               83330     
-_________________________________________________________________
-dense_5 (Dense)              (None, 320)               41920     
-_________________________________________________________________
-batch_normalization_5 (Batch (None, 320)               1280      
-_________________________________________________________________
-dropout_5 (Dropout)          (None, 320)               0         
-_________________________________________________________________
-label_output (Dense)         (None, 5)                 1605      
-=================================================================
-Total params: 212,495
-Trainable params: 211,595
-Non-trainable params: 900
-_________________________________________________________________
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">history</span> <span class="o">=</span> <span class="n">autoencoder</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-    <span class="n">x_train</span><span class="p">,</span>
-    <span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span>
-    <span class="n">epochs</span><span class="o">=</span><span class="mi">1002</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16384</span><span class="p">,</span>
-    <span class="n">validation_split</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span>
-<span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-<details class="description">
-      <summary class="btn btn-sm" data-open="Hide Output" data-close="Show Output"></summary>
-        <p>
-</p>
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Epoch 1/1002
-87/87 [==============================] - 6s 37ms/step - loss: 3.2765 - decoded_loss: 2.5013 - label_output_loss: 0.7752 - val_loss: 1.1174 - val_decoded_loss: 0.4225 - val_label_output_loss: 0.6949
-Epoch 2/1002
-87/87 [==============================] - 3s 30ms/step - loss: 1.1679 - decoded_loss: 0.4596 - label_output_loss: 0.7083 - val_loss: 0.8400 - val_decoded_loss: 0.1500 - val_label_output_loss: 0.6899
-Epoch 3/1002
-87/87 [==============================] - 3s 29ms/step - loss: 1.0435 - decoded_loss: 0.3474 - label_output_loss: 0.6961 - val_loss: 0.7875 - val_decoded_loss: 0.0986 - val_label_output_loss: 0.6889
-Epoch 4/1002
-87/87 [==============================] - 2s 29ms/step - loss: 0.9867 - decoded_loss: 0.2949 - label_output_loss: 0.6918 - val_loss: 0.7706 - val_decoded_loss: 0.0816 - val_label_output_loss: 0.6890
-Epoch 5/1002
-87/87 [==============================] - 3s 29ms/step - loss: 1.0088 - decoded_loss: 0.3185 - label_output_loss: 0.6903 - val_loss: 0.7628 - val_decoded_loss: 0.0742 - val_label_output_loss: 0.6886
-Epoch 6/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9435 - decoded_loss: 0.2538 - label_output_loss: 0.6898 - val_loss: 0.7582 - val_decoded_loss: 0.0695 - val_label_output_loss: 0.6887
-Epoch 7/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9328 - decoded_loss: 0.2433 - label_output_loss: 0.6895 - val_loss: 0.7504 - val_decoded_loss: 0.0622 - val_label_output_loss: 0.6882
-Epoch 8/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9254 - decoded_loss: 0.2361 - label_output_loss: 0.6893 - val_loss: 0.7489 - val_decoded_loss: 0.0604 - val_label_output_loss: 0.6885
-Epoch 9/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9405 - decoded_loss: 0.2513 - label_output_loss: 0.6892 - val_loss: 0.7476 - val_decoded_loss: 0.0591 - val_label_output_loss: 0.6884
-Epoch 10/1002
-87/87 [==============================] - 2s 29ms/step - loss: 0.9278 - decoded_loss: 0.2386 - label_output_loss: 0.6892 - val_loss: 0.7449 - val_decoded_loss: 0.0567 - val_label_output_loss: 0.6882
-Epoch 11/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9307 - decoded_loss: 0.2416 - label_output_loss: 0.6891 - val_loss: 0.7427 - val_decoded_loss: 0.0545 - val_label_output_loss: 0.6883
-Epoch 12/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9113 - decoded_loss: 0.2225 - label_output_loss: 0.6888 - val_loss: 0.7406 - val_decoded_loss: 0.0520 - val_label_output_loss: 0.6885
-Epoch 13/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9149 - decoded_loss: 0.2260 - label_output_loss: 0.6890 - val_loss: 0.7387 - val_decoded_loss: 0.0505 - val_label_output_loss: 0.6882
-Epoch 14/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9261 - decoded_loss: 0.2374 - label_output_loss: 0.6887 - val_loss: 0.7384 - val_decoded_loss: 0.0503 - val_label_output_loss: 0.6881
-Epoch 15/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9222 - decoded_loss: 0.2335 - label_output_loss: 0.6886 - val_loss: 0.7387 - val_decoded_loss: 0.0503 - val_label_output_loss: 0.6885
-Epoch 16/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9061 - decoded_loss: 0.2176 - label_output_loss: 0.6885 - val_loss: 0.7372 - val_decoded_loss: 0.0490 - val_label_output_loss: 0.6882
-Epoch 17/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9178 - decoded_loss: 0.2292 - label_output_loss: 0.6886 - val_loss: 0.7405 - val_decoded_loss: 0.0526 - val_label_output_loss: 0.6879
-Epoch 18/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8941 - decoded_loss: 0.2057 - label_output_loss: 0.6884 - val_loss: 0.7379 - val_decoded_loss: 0.0499 - val_label_output_loss: 0.6880
-Epoch 19/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9067 - decoded_loss: 0.2183 - label_output_loss: 0.6884 - val_loss: 0.7360 - val_decoded_loss: 0.0482 - val_label_output_loss: 0.6878
-Epoch 20/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9197 - decoded_loss: 0.2313 - label_output_loss: 0.6884 - val_loss: 0.7385 - val_decoded_loss: 0.0505 - val_label_output_loss: 0.6880
-Epoch 21/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9045 - decoded_loss: 0.2163 - label_output_loss: 0.6882 - val_loss: 0.7391 - val_decoded_loss: 0.0511 - val_label_output_loss: 0.6880
-Epoch 22/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8970 - decoded_loss: 0.2088 - label_output_loss: 0.6882 - val_loss: 0.7384 - val_decoded_loss: 0.0504 - val_label_output_loss: 0.6880
-Epoch 23/1002
-87/87 [==============================] - 2s 29ms/step - loss: 0.9360 - decoded_loss: 0.2479 - label_output_loss: 0.6881 - val_loss: 0.7339 - val_decoded_loss: 0.0461 - val_label_output_loss: 0.6878
-Epoch 24/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8909 - decoded_loss: 0.2028 - label_output_loss: 0.6881 - val_loss: 0.7393 - val_decoded_loss: 0.0510 - val_label_output_loss: 0.6882
-Epoch 25/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8966 - decoded_loss: 0.2086 - label_output_loss: 0.6880 - val_loss: 0.7351 - val_decoded_loss: 0.0471 - val_label_output_loss: 0.6880
-Epoch 26/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9049 - decoded_loss: 0.2171 - label_output_loss: 0.6879 - val_loss: 0.7315 - val_decoded_loss: 0.0435 - val_label_output_loss: 0.6880
-Epoch 27/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8959 - decoded_loss: 0.2081 - label_output_loss: 0.6878 - val_loss: 0.7348 - val_decoded_loss: 0.0468 - val_label_output_loss: 0.6880
-Epoch 28/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8936 - decoded_loss: 0.2058 - label_output_loss: 0.6878 - val_loss: 0.7347 - val_decoded_loss: 0.0468 - val_label_output_loss: 0.6879
-Epoch 29/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8993 - decoded_loss: 0.2116 - label_output_loss: 0.6877 - val_loss: 0.7346 - val_decoded_loss: 0.0467 - val_label_output_loss: 0.6878
-Epoch 30/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9043 - decoded_loss: 0.2166 - label_output_loss: 0.6876 - val_loss: 0.7349 - val_decoded_loss: 0.0470 - val_label_output_loss: 0.6878
-Epoch 31/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8943 - decoded_loss: 0.2067 - label_output_loss: 0.6877 - val_loss: 0.7352 - val_decoded_loss: 0.0471 - val_label_output_loss: 0.6880
-Epoch 32/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9031 - decoded_loss: 0.2156 - label_output_loss: 0.6875 - val_loss: 0.7362 - val_decoded_loss: 0.0482 - val_label_output_loss: 0.6880
-Epoch 33/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.9025 - decoded_loss: 0.2151 - label_output_loss: 0.6874 - val_loss: 0.7322 - val_decoded_loss: 0.0438 - val_label_output_loss: 0.6884
-Epoch 34/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8991 - decoded_loss: 0.2117 - label_output_loss: 0.6874 - val_loss: 0.7318 - val_decoded_loss: 0.0439 - val_label_output_loss: 0.6879
-Epoch 35/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8955 - decoded_loss: 0.2081 - label_output_loss: 0.6873 - val_loss: 0.7316 - val_decoded_loss: 0.0437 - val_label_output_loss: 0.6879
-Epoch 36/1002
-87/87 [==============================] - 3s 31ms/step - loss: 0.9228 - decoded_loss: 0.2355 - label_output_loss: 0.6874 - val_loss: 0.7311 - val_decoded_loss: 0.0429 - val_label_output_loss: 0.6883
-Epoch 37/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8863 - decoded_loss: 0.1990 - label_output_loss: 0.6873 - val_loss: 0.7334 - val_decoded_loss: 0.0454 - val_label_output_loss: 0.6880
-Epoch 38/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8938 - decoded_loss: 0.2067 - label_output_loss: 0.6871 - val_loss: 0.7317 - val_decoded_loss: 0.0436 - val_label_output_loss: 0.6881
-Epoch 39/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8955 - decoded_loss: 0.2082 - label_output_loss: 0.6873 - val_loss: 0.7321 - val_decoded_loss: 0.0441 - val_label_output_loss: 0.6880
-Epoch 40/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8989 - decoded_loss: 0.2117 - label_output_loss: 0.6872 - val_loss: 0.7318 - val_decoded_loss: 0.0436 - val_label_output_loss: 0.6883
-Epoch 41/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8904 - decoded_loss: 0.2033 - label_output_loss: 0.6872 - val_loss: 0.7285 - val_decoded_loss: 0.0404 - val_label_output_loss: 0.6881
-Epoch 42/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8889 - decoded_loss: 0.2018 - label_output_loss: 0.6870 - val_loss: 0.7344 - val_decoded_loss: 0.0460 - val_label_output_loss: 0.6884
-Epoch 43/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8896 - decoded_loss: 0.2025 - label_output_loss: 0.6871 - val_loss: 0.7299 - val_decoded_loss: 0.0418 - val_label_output_loss: 0.6881
-Epoch 44/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9085 - decoded_loss: 0.2213 - label_output_loss: 0.6871 - val_loss: 0.7323 - val_decoded_loss: 0.0441 - val_label_output_loss: 0.6882
-Epoch 45/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8972 - decoded_loss: 0.2104 - label_output_loss: 0.6867 - val_loss: 0.7300 - val_decoded_loss: 0.0421 - val_label_output_loss: 0.6879
-Epoch 46/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9084 - decoded_loss: 0.2216 - label_output_loss: 0.6868 - val_loss: 0.7313 - val_decoded_loss: 0.0433 - val_label_output_loss: 0.6880
-Epoch 47/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8876 - decoded_loss: 0.2007 - label_output_loss: 0.6869 - val_loss: 0.7336 - val_decoded_loss: 0.0452 - val_label_output_loss: 0.6885
-Epoch 48/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8860 - decoded_loss: 0.1993 - label_output_loss: 0.6867 - val_loss: 0.7272 - val_decoded_loss: 0.0390 - val_label_output_loss: 0.6881
-Epoch 49/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8836 - decoded_loss: 0.1968 - label_output_loss: 0.6868 - val_loss: 0.7306 - val_decoded_loss: 0.0423 - val_label_output_loss: 0.6883
-Epoch 50/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8836 - decoded_loss: 0.1970 - label_output_loss: 0.6866 - val_loss: 0.7289 - val_decoded_loss: 0.0407 - val_label_output_loss: 0.6882
-Epoch 51/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8905 - decoded_loss: 0.2038 - label_output_loss: 0.6866 - val_loss: 0.7317 - val_decoded_loss: 0.0433 - val_label_output_loss: 0.6884
-Epoch 52/1002
-87/87 [==============================] - 3s 29ms/step - loss: 0.8814 - decoded_loss: 0.1949 - label_output_loss: 0.6865 - val_loss: 0.7290 - val_decoded_loss: 0.0409 - val_label_output_loss: 0.6880
-Epoch 53/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8897 - decoded_loss: 0.2029 - label_output_loss: 0.6868 - val_loss: 0.7281 - val_decoded_loss: 0.0399 - val_label_output_loss: 0.6883
-Epoch 54/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8829 - decoded_loss: 0.1964 - label_output_loss: 0.6865 - val_loss: 0.7303 - val_decoded_loss: 0.0419 - val_label_output_loss: 0.6883
-Epoch 55/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8815 - decoded_loss: 0.1951 - label_output_loss: 0.6864 - val_loss: 0.7294 - val_decoded_loss: 0.0413 - val_label_output_loss: 0.6881
-Epoch 56/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8809 - decoded_loss: 0.1945 - label_output_loss: 0.6864 - val_loss: 0.7286 - val_decoded_loss: 0.0406 - val_label_output_loss: 0.6880
-Epoch 57/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.8834 - decoded_loss: 0.1970 - label_output_loss: 0.6864 - val_loss: 0.7286 - val_decoded_loss: 0.0405 - val_label_output_loss: 0.6880
-Epoch 58/1002
-87/87 [==============================] - 3s 30ms/step - loss: 0.9081 - decoded_loss: 0.2218 - label_output_loss: 0.6864 - val_loss: 0.7275 - val_decoded_loss: 0.0396 - val_label_output_loss: 0.6879
-Restoring model weights from the end of the best epoch.
-Epoch 00058: early stopping
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-    </details>
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">encoder</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="s1">'encoder.hdf5'</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">encoder</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="kc">False</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -1837,6 +1508,175 @@ Epoch 00058: early stopping
 </pre></div>
 
     </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">tuner</span> <span class="o">=</span> <span class="n">CVTuner</span><span class="p">(</span>
+    <span class="n">hypermodel</span> <span class="o">=</span> <span class="n">model_fn</span><span class="p">,</span>
+    <span class="n">oracle</span><span class="o">=</span><span class="n">kt</span><span class="o">.</span><span class="n">oracles</span><span class="o">.</span><span class="n">BayesianOptimization</span><span class="p">(</span>
+        <span class="n">objective</span><span class="o">=</span><span class="n">kt</span><span class="o">.</span><span class="n">Objective</span><span class="p">(</span><span class="s1">'val_auc'</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s1">'max'</span><span class="p">),</span>
+        <span class="n">num_initial_points</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">max_trials</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Invalid model 0/5
+Invalid model 1/5
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Invalid model 2/5
+Invalid model 3/5
+Invalid model 4/5
+Invalid model 5/5
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py", line 104, in build
+    model = self.hypermodel.build(hp)
+  File "&lt;ipython-input-34-6bd0ed9eccb9&gt;", line 2, in &lt;lambda&gt;
+    hp, x_train.shape[-1], y_train.shape[-1], encoder)
+NameError: name 'encoder' is not defined
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py</span> in <span class="ansi-cyan-fg">build</span><span class="ansi-blue-fg">(self, hp)</span>
+<span class="ansi-green-intense-fg ansi-bold">    103</span>                 <span class="ansi-green-fg">with</span> maybe_distribute<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>distribution_strategy<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 104</span><span class="ansi-red-fg">                     </span>model <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>hypermodel<span class="ansi-blue-fg">.</span>build<span class="ansi-blue-fg">(</span>hp<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    105</span>             <span class="ansi-green-fg">except</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">&lt;ipython-input-34-6bd0ed9eccb9&gt;</span> in <span class="ansi-cyan-fg">&lt;lambda&gt;</span><span class="ansi-blue-fg">(hp)</span>
+<span class="ansi-green-intense-fg ansi-bold">      1</span> model_fn = lambda hp: build_model(
+<span class="ansi-green-fg">----&gt; 2</span><span class="ansi-red-fg">     hp, x_train.shape[-1], y_train.shape[-1], encoder)
+</span>
+<span class="ansi-red-fg">NameError</span>: name 'encoder' is not defined
+
+During handling of the above exception, another exception occurred:
+
+<span class="ansi-red-fg">RuntimeError</span>                              Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-35-c739894a5ea3&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">      4</span>         objective<span class="ansi-blue-fg">=</span>kt<span class="ansi-blue-fg">.</span>Objective<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'val_auc'</span><span class="ansi-blue-fg">,</span> direction<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">'max'</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">      5</span>         num_initial_points<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">4</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">----&gt; 6</span><span class="ansi-red-fg">         max_trials=20))
+</span>
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/tuner.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, oracle, hypermodel, max_model_size, optimizer, loss, metrics, distribution_strategy, directory, project_name, logger, tuner_id, overwrite)</span>
+<span class="ansi-green-intense-fg ansi-bold">    103</span>                                     project_name<span class="ansi-blue-fg">=</span>project_name<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    104</span>                                     logger<span class="ansi-blue-fg">=</span>logger<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 105</span><span class="ansi-red-fg">                                     overwrite=overwrite)
+</span><span class="ansi-green-intense-fg ansi-bold">    106</span> 
+<span class="ansi-green-intense-fg ansi-bold">    107</span>         self<span class="ansi-blue-fg">.</span>distribution_strategy <span class="ansi-blue-fg">=</span> distribution_strategy
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/base_tuner.py</span> in <span class="ansi-cyan-fg">__init__</span><span class="ansi-blue-fg">(self, oracle, hypermodel, directory, project_name, logger, overwrite)</span>
+<span class="ansi-green-intense-fg ansi-bold">     88</span>         self<span class="ansi-blue-fg">.</span>_display <span class="ansi-blue-fg">=</span> tuner_utils<span class="ansi-blue-fg">.</span>Display<span class="ansi-blue-fg">(</span>oracle<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>oracle<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     89</span> 
+<span class="ansi-green-fg">---&gt; 90</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_populate_initial_space<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     91</span> 
+<span class="ansi-green-intense-fg ansi-bold">     92</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> overwrite <span class="ansi-green-fg">and</span> tf<span class="ansi-blue-fg">.</span>io<span class="ansi-blue-fg">.</span>gfile<span class="ansi-blue-fg">.</span>exists<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_get_tuner_fname<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/base_tuner.py</span> in <span class="ansi-cyan-fg">_populate_initial_space</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    103</span>         """
+<span class="ansi-green-intense-fg ansi-bold">    104</span>         hp <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>oracle<span class="ansi-blue-fg">.</span>get_space<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 105</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>hypermodel<span class="ansi-blue-fg">.</span>build<span class="ansi-blue-fg">(</span>hp<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    106</span>         self<span class="ansi-blue-fg">.</span>oracle<span class="ansi-blue-fg">.</span>update_space<span class="ansi-blue-fg">(</span>hp<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    107</span> 
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py</span> in <span class="ansi-cyan-fg">_build_wrapper</span><span class="ansi-blue-fg">(self, hp, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">     62</span>             <span class="ansi-red-fg"># to the search space.</span>
+<span class="ansi-green-intense-fg ansi-bold">     63</span>             hp <span class="ansi-blue-fg">=</span> hp<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">---&gt; 64</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_build<span class="ansi-blue-fg">(</span>hp<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">     65</span> 
+<span class="ansi-green-intense-fg ansi-bold">     66</span> 
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/kerastuner/engine/hypermodel.py</span> in <span class="ansi-cyan-fg">build</span><span class="ansi-blue-fg">(self, hp)</span>
+<span class="ansi-green-intense-fg ansi-bold">    111</span>                 <span class="ansi-green-fg">if</span> i <span class="ansi-blue-fg">==</span> self<span class="ansi-blue-fg">.</span>_max_fail_streak<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    112</span>                     raise RuntimeError(
+<span class="ansi-green-fg">--&gt; 113</span><span class="ansi-red-fg">                         'Too many failed attempts to build model.')
+</span><span class="ansi-green-intense-fg ansi-bold">    114</span>                 <span class="ansi-green-fg">continue</span>
+<span class="ansi-green-intense-fg ansi-bold">    115</span> 
+
+<span class="ansi-red-fg">RuntimeError</span>: Too many failed attempts to build model.</pre>
+</div>
+</div>
+
 </div>
 </div>
 
