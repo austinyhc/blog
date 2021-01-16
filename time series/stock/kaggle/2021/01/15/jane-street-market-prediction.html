@@ -136,12 +136,15 @@ window.onload = wrap_img;
 
   <div class="post-content e-content" itemprop="articleBody">
     <ul class="section-nav">
-<li class="toc-entry toc-h2"><a href="#Dependencies">Dependencies </a></li>
+<li class="toc-entry toc-h1"><a href="#1%-Better-Everyday">1% Better Everyday </a></li>
+<li class="toc-entry toc-h1"><a href="#Overview">Overview </a></li>
+<li class="toc-entry toc-h1"><a href="#Preworks">Preworks </a></li>
 <li class="toc-entry toc-h1"><a href="#Exploration">Exploration </a></li>
 <li class="toc-entry toc-h1"><a href="#HyperParameters">HyperParameters </a></li>
 <li class="toc-entry toc-h1"><a href="#Data">Data </a>
 <ul>
-<li class="toc-entry toc-h2"><a href="#Loading-training-data">Loading training data </a></li>
+<li class="toc-entry toc-h2"><a href="#Loading-data">Loading data </a></li>
+<li class="toc-entry toc-h2"><a href="#Preparing-data">Preparing data </a></li>
 </ul>
 </li>
 <li class="toc-entry toc-h1"><a href="#Model">Model </a>
@@ -164,6 +167,30 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="1%-Better-Everyday">
+<a class="anchor" href="#1%-Better-Everyday" aria-hidden="true"><span class="octicon octicon-link"></span></a>1% Better Everyday<a class="anchor-link" href="#1%-Better-Everyday"> </a>
+</h1>
+<ul>
+<li>
+<p>I see that autoencoders are widely being used in this competition. However, I am having some doubts on wether the autoencoded features really help the model. As shown in the notebook, the compressed features concatenated back into the original data as extra featues. For me personally, I've tried 2~3 different random seed and the variation on the results are large. It makes me wonder that the autoencoder is only useful on certain features, so dropping these from the autoencoder might be a good idea.</p>
+</li>
+<li>
+<p>Maybe we can feed the autoencoded features to non-nn models e.g. Xgboost, CatBoost, CBM? <a href="https://www.kaggle.com/gregorycalvez/de-anonymization-time-aggregation-tags">refence</a></p>
+</li>
+<li>
+<p>Maybe we need to remove correlated featues before generating autoencoded features.</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Overview">
+<a class="anchor" href="#Overview" aria-hidden="true"><span class="octicon octicon-link"></span></a>Overview<a class="anchor-link" href="#Overview"> </a>
+</h1>
 <p>The efficient market hypothesis posits that markets cannot be beaten because asset prices will always reflect the fundamental value of the assets. In a perfectly efficient market, buyers and sellers would have all the agency and information needed to make rational trading decisions.</p>
 <p>In reality, financial markets are not efficient. The purpose of this trading model is to identify arbitrage opportunities to "buy low and seell high". In other words, we exploit market inefficiencies to identify and decide whether to execute profitable trades.</p>
 <p>The dataset, provided by Jane Street, contains an anonymized set of 129 features representing real stock market data. Each row in the dataset represents a trading opportunity, for which I predict an action value: 1 to amke the trade and 0 to pass on it. Due to the high demensionality of the dataset, I use Principal Components Analysis (PCA) to identify features to be used for supervised learning. The intuition is to compress the dataset and use it more efficiently. I then use XGBoost (extreme gradient boosting) - a hugely popular ML library due to its superior execution speed and model performance - to predict profitable trades. I also use Optuna (an automatic hyperparameter optimization software framework) to tune the hyperparameters of the classification model.</p>
@@ -174,9 +201,9 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Dependencies">
-<a class="anchor" href="#Dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dependencies<a class="anchor-link" href="#Dependencies"> </a>
-</h2>
+<h1 id="Preworks">
+<a class="anchor" href="#Preworks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preworks<a class="anchor-link" href="#Preworks"> </a>
+</h1>
 </div>
 </div>
 </div>
@@ -287,36 +314,43 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We can observe that the train.csv is large: <code>6GB</code> and it has <code>2390492</code> rows in the file.</p>
-
+<h1 id="Exploration">
+<a class="anchor" href="#Exploration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Exploration<a class="anchor-link" href="#Exploration"> </a>
+</h1>
 </div>
 </div>
 </div>
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>2390492 /content/gdrive/MyDrive/kaggle/input/jane-street-market-prediction/train.csv
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>To speed things up here, let's use <code>datatable</code> to read the data, and then convert to a pandas dataframe.</p>
+<h1 id="HyperParameters">
+<a class="anchor" href="#HyperParameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>HyperParameters<a class="anchor-link" href="#HyperParameters"> </a>
+</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Data">
+<a class="anchor" href="#Data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data<a class="anchor-link" href="#Data"> </a>
+</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Loading-data">
+<a class="anchor" href="#Loading-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading data<a class="anchor-link" href="#Loading-data"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's try <code>datatable</code> to load the data, and then convert to a pandas dataframe.</p>
 
 </div>
 </div>
@@ -342,8 +376,8 @@ window.onload = wrap_img;
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 25.6 s, sys: 5.94 s, total: 31.5 s
-Wall time: 3min 1s
+<pre>CPU times: user 30.9 s, sys: 6.73 s, total: 37.6 s
+Wall time: 3min 20s
 </pre>
 </div>
 </div>
@@ -375,8 +409,8 @@ Wall time: 3min 1s
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>CPU times: user 4.82 s, sys: 3.88 s, total: 8.7 s
-Wall time: 6.72 s
+<pre>CPU times: user 5.35 s, sys: 4.15 s, total: 9.5 s
+Wall time: 7.2 s
 </pre>
 </div>
 </div>
@@ -390,35 +424,51 @@ Wall time: 6.72 s
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Exploration">
-<a class="anchor" href="#Exploration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Exploration<a class="anchor-link" href="#Exploration"> </a>
-</h1>
+<p>The dataframe is <code>2390490</code> rows by <code>138</code> columns</p>
+
 </div>
 </div>
 </div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 2390491 entries, 0 to 2390490
+Columns: 138 entries, date to ts_id
+dtypes: float64(135), int32(3)
+memory usage: 2.4 GB
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="HyperParameters">
-<a class="anchor" href="#HyperParameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>HyperParameters<a class="anchor-link" href="#HyperParameters"> </a>
-</h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Data">
-<a class="anchor" href="#Data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data<a class="anchor-link" href="#Data"> </a>
-</h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Loading-training-data">
-<a class="anchor" href="#Loading-training-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading training data<a class="anchor-link" href="#Loading-training-data"> </a>
+<h2 id="Preparing-data">
+<a class="anchor" href="#Preparing-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preparing data<a class="anchor-link" href="#Preparing-data"> </a>
 </h2>
 </div>
 </div>
@@ -669,6 +719,7 @@ Wall time: 6.72 s
 <h1 id="Model">
 <a class="anchor" href="#Model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model<a class="anchor-link" href="#Model"> </a>
 </h1>
+<p>As many people have mentioned, finance datasets are usually have low signal-to-noise ratio (SNR). So, here comes an intuitive question. Does Denoising Auto Encoder (DAE) help in reducing noise and cleaning data in finance datasets?</p>
 <p>The idea of using an encoder is the denoise the data. After many attempts at using a unsupervised autoencoder, the choice landed on a bottleneck encoder as this will preserve the intra-feature relations.</p>
 
 </div>
