@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      12 min read
+      14 min read
     
 </span></p>
 
@@ -138,13 +138,12 @@ window.onload = wrap_img;
     <ul class="section-nav">
 <li class="toc-entry toc-h1"><a href="#1%-Better-Everyday">1% Better Everyday </a></li>
 <li class="toc-entry toc-h1"><a href="#Overview">Overview </a></li>
-<li class="toc-entry toc-h1"><a href="#Preworks">Preworks </a></li>
-<li class="toc-entry toc-h1"><a href="#Exploration">Exploration </a></li>
-<li class="toc-entry toc-h1"><a href="#HyperParameters">HyperParameters </a></li>
+<li class="toc-entry toc-h1"><a href="#Prework">Prework </a></li>
 <li class="toc-entry toc-h1"><a href="#Data">Data </a>
 <ul>
-<li class="toc-entry toc-h2"><a href="#Loading-data">Loading data </a></li>
-<li class="toc-entry toc-h2"><a href="#Preparing-data">Preparing data </a></li>
+<li class="toc-entry toc-h2"><a href="#Loading">Loading </a></li>
+<li class="toc-entry toc-h2"><a href="#Exploration">Exploration </a></li>
+<li class="toc-entry toc-h2"><a href="#Preparing">Preparing </a></li>
 </ul>
 </li>
 <li class="toc-entry toc-h1"><a href="#Model">Model </a>
@@ -201,8 +200,8 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Preworks">
-<a class="anchor" href="#Preworks" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preworks<a class="anchor-link" href="#Preworks"> </a>
+<h1 id="Prework">
+<a class="anchor" href="#Prework" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prework<a class="anchor-link" href="#Prework"> </a>
 </h1>
 </div>
 </div>
@@ -314,24 +313,6 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Exploration">
-<a class="anchor" href="#Exploration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Exploration<a class="anchor-link" href="#Exploration"> </a>
-</h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="HyperParameters">
-<a class="anchor" href="#HyperParameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>HyperParameters<a class="anchor-link" href="#HyperParameters"> </a>
-</h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Data">
 <a class="anchor" href="#Data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data<a class="anchor-link" href="#Data"> </a>
 </h1>
@@ -341,8 +322,8 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Loading-data">
-<a class="anchor" href="#Loading-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading data<a class="anchor-link" href="#Loading-data"> </a>
+<h2 id="Loading">
+<a class="anchor" href="#Loading" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loading<a class="anchor-link" href="#Loading"> </a>
 </h2>
 </div>
 </div>
@@ -362,8 +343,8 @@ window.onload = wrap_img;
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
-<span class="n">train_dt</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">fread</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">train.csv"</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {}
+train_dt = dt.fread(f"{input_path}train.csv")
 </pre></div>
 
     </div>
@@ -395,8 +376,7 @@ Wall time: 3min 20s
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
-<span class="n">train_df</span> <span class="o">=</span> <span class="n">train_dt</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_df</span> <span class="o">=</span> <span class="n">train_dt</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -467,8 +447,294 @@ memory usage: 2.4 GB
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Preparing-data">
-<a class="anchor" href="#Preparing-data" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preparing data<a class="anchor-link" href="#Preparing-data"> </a>
+<h2 id="Exploration">
+<a class="anchor" href="#Exploration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Exploration<a class="anchor-link" href="#Exploration"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This dataset coantians an anonymized set of features, featue_{0..129}, representing real stock market data. Each row in the dataset represents a trading opportunity, for which which you will be predicting an action value: 1 to make the trade and 0 to pass on it. Each trade has an associated weight and resp, which together represents a return on the trade. the data column is an integer which represents the day of the trade, while <code>ts_id</code> represents a time ordering. In addition to anonymized feature values, you are provided iwth metatdata about the features in <code>features.csv</code><sup id="fnref-1" class="footnote-ref"><a href="#fn-1">1</a></sup></p>
+<p></p>
+<div class="footnotes"><p id="fn-1">1. <a href="#fnref-1" class="footnote footnotes">↩</a></p></div>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">features.csv"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>feature</th>
+      <th>tag_0</th>
+      <th>tag_1</th>
+      <th>tag_2</th>
+      <th>tag_3</th>
+      <th>tag_4</th>
+      <th>tag_5</th>
+      <th>tag_6</th>
+      <th>tag_7</th>
+      <th>tag_8</th>
+      <th>tag_9</th>
+      <th>tag_10</th>
+      <th>tag_11</th>
+      <th>tag_12</th>
+      <th>tag_13</th>
+      <th>tag_14</th>
+      <th>tag_15</th>
+      <th>tag_16</th>
+      <th>tag_17</th>
+      <th>tag_18</th>
+      <th>tag_19</th>
+      <th>tag_20</th>
+      <th>tag_21</th>
+      <th>tag_22</th>
+      <th>tag_23</th>
+      <th>tag_24</th>
+      <th>tag_25</th>
+      <th>tag_26</th>
+      <th>tag_27</th>
+      <th>tag_28</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>feature_0</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>feature_1</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>feature_2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>feature_3</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>feature_4</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>True</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Preparing">
+<a class="anchor" href="#Preparing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preparing<a class="anchor-link" href="#Preparing"> </a>
 </h2>
 </div>
 </div>
