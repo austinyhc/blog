@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      16 min read
+      17 min read
     
 </span></p>
 
@@ -312,7 +312,8 @@ window.onload = wrap_img;
 <span class="n">CHANNELS</span> <span class="o">=</span> <span class="mi">3</span><span class="c1">#@param {type:"number"}</span>
 <span class="n">IMG_SIZE</span> <span class="o">=</span> <span class="p">(</span><span class="n">HEIGHT</span><span class="p">,</span> <span class="n">WIDTH</span><span class="p">,</span> <span class="n">CHANNELS</span><span class="p">)</span>
 <span class="n">EPOCHS</span> <span class="o">=</span>  <span class="mi">50</span><span class="c1">#@param {type:"number"}</span>
-<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">*</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span> <span class="c1">#@param {type:"raw"}</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">16</span><span class="c1">#@param {type:"raw"}</span>
+<span class="n">BATCH_SIZE</span> <span class="o">*=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Input size: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">IMG_SIZE</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Train on batch size of </span><span class="si">{}</span><span class="s2"> for </span><span class="si">{}</span><span class="s2"> epochs"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">EPOCHS</span><span class="p">))</span>
@@ -329,7 +330,7 @@ window.onload = wrap_img;
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Input size: (512, 512, 3)
-Train on batch size of 256 for 50 epochs
+Train on batch size of 128 for 50 epochs
 </pre>
 </div>
 </div>
@@ -990,7 +991,7 @@ Number of test set:  7382
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>67658</pre>
+<pre>48751</pre>
 </div>
 
 </div>
@@ -1153,41 +1154,41 @@ Number of test set:  7382
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Model: "model_1"
+<pre>Model: "model"
 __________________________________________________________________________________________________
 Layer (type)                    Output Shape         Param #     Connected to                     
 ==================================================================================================
-input_8 (InputLayer)            [(None, 512, 512, 3) 0                                            
+input_4 (InputLayer)            [(None, 512, 512, 3) 0                                            
 __________________________________________________________________________________________________
-xception (Functional)           (None, 16, 16, 2048) 20861480    input_8[0][0]                    
+xception (Functional)           (None, 16, 16, 2048) 20861480    input_4[0][0]                    
 __________________________________________________________________________________________________
-resnet152v2 (Functional)        (None, 16, 16, 2048) 58331648    input_8[0][0]                    
+resnet152v2 (Functional)        (None, 16, 16, 2048) 58331648    input_4[0][0]                    
 __________________________________________________________________________________________________
-inception_resnet_v2 (Functional (None, 14, 14, 1536) 54336736    input_8[0][0]                    
+inception_resnet_v2 (Functional (None, 14, 14, 1536) 54336736    input_4[0][0]                    
 __________________________________________________________________________________________________
-global_average_pooling2d_1 (Glo multiple             0           xception[0][0]                   
+global_average_pooling2d (Globa multiple             0           xception[0][0]                   
                                                                  resnet152v2[0][0]                
                                                                  inception_resnet_v2[0][0]        
 __________________________________________________________________________________________________
-layer_normalization_3 (LayerNor (None, 2048)         4096        global_average_pooling2d_1[0][0] 
+layer_normalization (LayerNorma (None, 2048)         4096        global_average_pooling2d[0][0]   
 __________________________________________________________________________________________________
-layer_normalization_4 (LayerNor (None, 2048)         4096        global_average_pooling2d_1[1][0] 
+layer_normalization_1 (LayerNor (None, 2048)         4096        global_average_pooling2d[1][0]   
 __________________________________________________________________________________________________
-layer_normalization_5 (LayerNor (None, 1536)         3072        global_average_pooling2d_1[2][0] 
+layer_normalization_2 (LayerNor (None, 1536)         3072        global_average_pooling2d[2][0]   
 __________________________________________________________________________________________________
-prob_dist_0 (Dense)             (None, 104)          213096      layer_normalization_3[0][0]      
+prob_dist_0 (Dense)             (None, 104)          213096      layer_normalization[0][0]        
 __________________________________________________________________________________________________
-prob_dist_1 (Dense)             (None, 104)          213096      layer_normalization_4[0][0]      
+prob_dist_1 (Dense)             (None, 104)          213096      layer_normalization_1[0][0]      
 __________________________________________________________________________________________________
-prob_dist_2 (Dense)             (None, 104)          159848      layer_normalization_5[0][0]      
+prob_dist_2 (Dense)             (None, 104)          159848      layer_normalization_2[0][0]      
 __________________________________________________________________________________________________
-tf.stack_1 (TFOpLambda)         (None, 3, 104)       0           prob_dist_0[0][0]                
+tf.stack (TFOpLambda)           (None, 3, 104)       0           prob_dist_0[0][0]                
                                                                  prob_dist_1[0][0]                
                                                                  prob_dist_2[0][0]                
 __________________________________________________________________________________________________
-tf.linalg.matmul_1 (TFOpLambda) (None, 1, 104)       0           tf.stack_1[0][0]                 
+tf.linalg.matmul (TFOpLambda)   (None, 1, 104)       0           tf.stack[0][0]                   
 __________________________________________________________________________________________________
-tf.__operators__.getitem_1 (Sli (None, 104)          0           tf.linalg.matmul_1[0][0]         
+tf.__operators__.getitem (Slici (None, 104)          0           tf.linalg.matmul[0][0]           
 ==================================================================================================
 Total params: 134,127,168
 Trainable params: 133,868,352
@@ -1219,9 +1220,9 @@ ________________________________________________________________________________
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">CustomCyclicSchedule</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">CosineDecay</span><span class="p">):</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">CustomCyclicSchedule</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">schedules</span><span class="o">.</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_step</span><span class="p">,</span> <span class="n">lr_max</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mf">25.0</span><span class="p">,</span> <span class="n">div_final</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span>
-                 <span class="n">pct_start</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">staircase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cycle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">pct_start</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">staircase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cycle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_start</span> <span class="o">=</span> <span class="n">lr_max</span> <span class="o">/</span> <span class="n">div</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lr_min</span> <span class="o">=</span> <span class="n">lr_max</span> <span class="o">/</span> <span class="n">div_final</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_step</span> <span class="o">*</span> <span class="n">pct_start</span><span class="p">)</span>
@@ -1231,20 +1232,18 @@ ________________________________________________________________________________
         <span class="bp">self</span><span class="o">.</span><span class="n">falling_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_step</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">falling_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_min</span> <span class="o">/</span> <span class="n">lr_max</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cycle</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decay_fn</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">CosineDecay</span><span class="p">(</span>
             <span class="n">initial_learning_rate</span> <span class="o">=</span> <span class="n">lr_max</span><span class="p">,</span>
             <span class="n">decay_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">falling_steps</span><span class="p">,</span>
-            <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_min</span><span class="p">,</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">)</span>
-
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_min</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="sd">""" `step` is actually the step index, starting at 0. """</span>
-        <span class="n">lr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rising_a</span><span class="o">*</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_b</span>
-                <span class="k">if</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span> <span class="k">else</span>
-              <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)))</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span><span class="n">step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span><span class="p">,</span>
+                     <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_a</span><span class="o">*</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_b</span><span class="p">,</span>
+                     <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay_fn</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
 </pre></div>
 
     </div>
@@ -1274,8 +1273,7 @@ ________________________________________________________________________________
         <span class="n">lr_max</span><span class="o">=</span><span class="n">LR_MAX</span><span class="p">,</span>
         <span class="n">div</span><span class="o">=</span><span class="n">DIV</span><span class="p">,</span>
         <span class="n">div_final</span><span class="o">=</span><span class="n">DIV_FINAL</span><span class="p">,</span>
-        <span class="n">cycle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">cycle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="n">xps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">NSTEPS</span><span class="p">)</span>
 <span class="n">yps</span> <span class="o">=</span> <span class="p">[</span><span class="n">schedule</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xps</span><span class="p">]</span>
@@ -1287,7 +1285,6 @@ ________________________________________________________________________________
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="si">{:d}</span><span class="s1"> total epochs and </span><span class="si">{:d}</span><span class="s1"> steps per epoch'</span>
         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">,</span> <span class="n">NSTEPS</span> <span class="o">//</span> <span class="n">EPOCHS</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">schedule</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -1300,8 +1297,7 @@ ________________________________________________________________________________
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>50 total epochs and 50 steps per epoch
-{'initial_learning_rate': 0.0008, 'decay_steps': 1875, 'alpha': 8e-09, 'name': None}
+<pre>50 total epochs and 100 steps per epoch
 </pre>
 </div>
 </div>
@@ -1311,7 +1307,7 @@ ________________________________________________________________________________
 
 
 <div class="output_png output_subarea ">
-<img src="data:image/png;base64,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%0A">
+<img src="data:image/png;base64,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%0A">
 </div>
 
 </div>
@@ -1403,6 +1399,35 @@ ________________________________________________________________________________
 </div>
     
 
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">_constant_to_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">constant_op</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+    <span class="n">loss_object</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">CategoricalCrossentropy</span><span class="p">(</span>
+                <span class="n">from_logits</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'none'</span><span class="p">,</span> <span class="n">label_smoothing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">,</span> <span class="n">sample_weights</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="n">epsilon_</span> <span class="o">=</span> <span class="n">_constant_to_tensor</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">epsilon</span><span class="p">(),</span> <span class="n">prob_dists</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">base_dtype</span><span class="p">)</span>
+        <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">clip_ops</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span><span class="n">prob_dists</span><span class="p">,</span> <span class="n">epsilon_</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon_</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">NCLASSES</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_object</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">compute_average_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">global_batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -1461,56 +1486,14 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_input_signature</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-<span class="p">]</span>
-<span class="n">valid_input_signature</span> <span class="o">=</span> <span class="n">train_input_signature</span>
-<span class="n">test_input_signature</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">input_signature</span><span class="o">=</span><span class="n">train_input_signature</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
-            <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">flower_classifier</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
-            <span class="n">train_acc_obj</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
-
-        <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">flower_classifier</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
-        <span class="n">grads</span><span class="p">,</span> <span class="n">global_norm</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">clip_by_global_norm</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">clip_norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-        <span class="n">opt</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">flower_classifier</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">loss</span>
-    
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span> <span class="nf">distributed_train_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
-        <span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="o">=</span> <span class="n">inputs</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_step</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
-
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">input_signature</span><span class="o">=</span><span class="n">valid_input_signature</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">valid_step</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
-        <span class="n">prob_dists</span> <span class="o">=</span><span class="n">flower_classifier</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">,</span> <span class="n">sample_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-        <span class="n">valid_acc_obj</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prob_dists</span>
-
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span> <span class="nf">distributed_valid_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
-        <span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="o">=</span> <span class="n">inputs</span>
-        <span class="n">loss</span><span class="p">,</span> <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">valid_step</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">labels</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">prob_dists</span>
-
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">input_signature</span><span class="o">=</span><span class="n">test_input_signature</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
-        <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">flower_classifier</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">prob_dists</span>
-
-    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span> <span class="nf">distributed_test_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
-        <span class="n">images</span> <span class="o">=</span> <span class="n">inputs</span>
-        <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_step</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">images</span><span class="p">,))</span>
-        <span class="k">return</span> <span class="n">prob_dists</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_train_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">bs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">data_augment</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">bs</span><span class="p">)</span> <span class="k">if</span> <span class="n">bs</span> <span class="k">else</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+    <span class="c1"># prefetch the next batch while training</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span>
 </pre></div>
 
     </div>
@@ -1527,29 +1510,7 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train_loss'</span><span class="p">,</span> <span class="s1">'train_acc'</span><span class="p">,</span> <span class="s1">'valid_loss'</span><span class="p">,</span> <span class="s1">'valid_acc'</span><span class="p">,</span>
-        <span class="s1">'valid_f1'</span><span class="p">,</span> <span class="s1">'valid_precision'</span><span class="p">,</span> <span class="s1">'valid_recall'</span><span class="p">,</span> <span class="s1">'model_coefs'</span><span class="p">]</span>
-<span class="n">history</span> <span class="o">=</span> <span class="p">{</span> <span class="n">k</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">}</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">TRAIN_NSTEPS</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">count_data_items</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">)</span> <span class="o">/</span> <span class="n">BATCH_SIZE</span><span class="p">)</span>
-<span class="n">VALID_NSTEPS</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">count_data_items</span><span class="p">(</span><span class="n">valid_filenames</span><span class="p">)</span> <span class="o">/</span> <span class="n">BATCH_SIZE</span><span class="p">)</span>
-<span class="n">TEST_NSTEPS</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">count_data_items</span><span class="p">(</span><span class="n">test_filenames</span><span class="p">)</span> <span class="o">/</span> <span class="n">BATCH_SIZE</span><span class="p">)</span>
-<span class="p">(</span><span class="n">TRAIN_NSTEPS</span><span class="p">,</span> <span class="n">VALID_NSTEPS</span><span class="p">,</span> <span class="n">TEST_NSTEPS</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BATCH_SIZE</span>
 </pre></div>
 
     </div>
@@ -1564,7 +1525,7 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>(50, 15, 29)</pre>
+<pre>128</pre>
 </div>
 
 </div>
@@ -1582,11 +1543,35 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">valid_ds</span> <span class="o">=</span> <span class="n">get_valid_dataset</span><span class="p">(</span><span class="n">valid_filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">valid_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">experimental_distribute_dataset</span><span class="p">(</span><span class="n">valid_ds</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+  <span class="n">model</span> <span class="o">=</span> <span class="n">Flower_Classifier</span><span class="p">()</span>
+  <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">schedule</span><span class="p">)</span>
+  <span class="n">training_loss</span><span class="p">,</span> <span class="n">training_accuracy</span> <span class="o">=</span> <span class="n">get_metrics</span><span class="p">(</span><span class="s2">"train"</span><span class="p">)</span>
 
-<span class="n">test_ds</span> <span class="o">=</span> <span class="n">get_test_dataset</span><span class="p">(</span><span class="n">test_filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">im</span><span class="p">,</span><span class="n">lbl</span><span class="p">:</span> <span class="n">im</span><span class="p">)</span>
-<span class="n">test_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">experimental_distribute_dataset</span><span class="p">(</span><span class="n">test_ds</span><span class="p">)</span>
+<span class="c1"># Calculate per replica batch size, and distribute the datasets</span>
+<span class="c1"># on each TPU worker.</span>
+<span class="n">per_replica_batch_size</span> <span class="o">=</span> <span class="n">BATCH_SIZE</span> <span class="o">//</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">distribute_datasets_from_function</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">get_train_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">,</span> <span class="n">per_replica_batch_size</span><span class="p">))</span>
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+  <span class="sd">"""The step function for one training step"""</span>
+        
+  <span class="k">def</span> <span class="nf">step_fn</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+    <span class="sd">"""The computation to run on each TPU device."""</span>
+    <span class="n">images</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">inputs</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
+      <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+      <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+
+    <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
+    <span class="c1">#grads, global_norm = tf.clip_by_global_norm(grads, clip_norm=1.0)</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)))</span>
+    <span class="n">training_loss</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">)</span>
+    <span class="n">training_accuracy</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+
+  <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">step_fn</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">),))</span>
 </pre></div>
 
     </div>
@@ -1603,11 +1588,285 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cm_trues</span> <span class="o">=</span> <span class="p">(</span><span class="n">valid_ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">im</span><span class="p">,</span><span class="n">lbl</span><span class="p">:</span> <span class="n">lbl</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">unbatch</span><span class="p">()</span>
-                    <span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">count_data_items</span><span class="p">(</span><span class="n">valid_filenames</span><span class="p">))</span>
-                    <span class="o">.</span><span class="n">as_numpy_iterator</span><span class="p">()</span>
-                    <span class="o">.</span><span class="n">next</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="n">NSTEPS</span> <span class="o">//</span> <span class="n">BATCH_SIZE</span>
+
+<span class="n">train_iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s1">'Epoch: </span><span class="si">{}</span><span class="s1">/5'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">))</span>
+
+  <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps_per_epoch</span><span class="p">):</span>
+    <span class="n">train_step</span><span class="p">(</span><span class="n">train_iterator</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s1">'Current step: </span><span class="si">{}</span><span class="s1">, training loss: </span><span class="si">{}</span><span class="s1">, accuracy: </span><span class="si">{}</span><span class="s1">%'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+      <span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">training_loss</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span> <span class="mi">4</span><span class="p">),</span>
+      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">training_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">())</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+  <span class="n">training_loss</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+  <span class="n">training_accuracy</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch: 0/5
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ResourceExhaustedError</span>                    Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-41-a8e91e39573a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">      8</span>     train_step<span class="ansi-blue-fg">(</span>train_iterator<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      9</span>   print('Current step: {}, training loss: {}, accuracy: {}%'.format(
+<span class="ansi-green-fg">---&gt; 10</span><span class="ansi-red-fg">       </span>optimizer<span class="ansi-blue-fg">.</span>iterations<span class="ansi-blue-fg">.</span>numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     11</span>       round<span class="ansi-blue-fg">(</span>float<span class="ansi-blue-fg">(</span>training_loss<span class="ansi-blue-fg">.</span>result<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">4</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>       round(float(training_accuracy.result()) * 100, 2)))
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/distribute/values.py</span> in <span class="ansi-cyan-fg">numpy</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">    738</span>   <span class="ansi-green-fg">def</span> numpy<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    739</span>     <span class="ansi-green-fg">if</span> context<span class="ansi-blue-fg">.</span>executing_eagerly<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 740</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>read_value<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    741</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    742</span>       raise NotImplementedError(
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">numpy</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1069</span>     """
+<span class="ansi-green-intense-fg ansi-bold">   1070</span>     <span class="ansi-red-fg"># TODO(slebedev): Consider avoiding a copy for non-CPU or remote tensors.</span>
+<span class="ansi-green-fg">-&gt; 1071</span><span class="ansi-red-fg">     </span>maybe_arr <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
+<span class="ansi-green-intense-fg ansi-bold">   1072</span>     <span class="ansi-green-fg">return</span> maybe_arr<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>maybe_arr<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>ndarray<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">else</span> maybe_arr
+<span class="ansi-green-intense-fg ansi-bold">   1073</span> 
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">_numpy</span><span class="ansi-blue-fg">(self)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1037</span>       <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_numpy_internal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   1038</span>     <span class="ansi-green-fg">except</span> core<span class="ansi-blue-fg">.</span>_NotOkStatusException <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
+<span class="ansi-green-fg">-&gt; 1039</span><span class="ansi-red-fg">       </span>six<span class="ansi-blue-fg">.</span>raise_from<span class="ansi-blue-fg">(</span>core<span class="ansi-blue-fg">.</span>_status_to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">.</span>code<span class="ansi-blue-fg">,</span> e<span class="ansi-blue-fg">.</span>message<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
+<span class="ansi-green-intense-fg ansi-bold">   1040</span> 
+<span class="ansi-green-intense-fg ansi-bold">   1041</span>   <span class="ansi-blue-fg">@</span>property
+
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/six.py</span> in <span class="ansi-cyan-fg">raise_from</span><span class="ansi-blue-fg">(value, from_value)</span>
+
+<span class="ansi-red-fg">ResourceExhaustedError</span>: 9 root error(s) found.
+  (0) Resource exhausted: {{function_node __inference_train_step_663588}} Compilation failure: Ran out of memory in memory space hbm. Used 13.31G of 7.48G hbm. Exceeded hbm capacity by 5.82G.
+
+Total hbm usage &gt;= 13.82G:
+    reserved        530.00M 
+    program          13.31G 
+    arguments       unknown size 
+
+Output size unknown.
+
+Program hbm requirement 13.31G:
+    global            84.0K
+    scoped          128.81M
+    HLO temp         13.18G (86.0% utilization: Unpadded (11.00G) Padded (12.80G), 2.9% fragmentation (389.92M))
+
+  Largest program allocations in hbm:
+
+  1. Size: 500.07M
+     Shape: f32[16,253,253,64]{3,0,2,1:T(8,128)}
+     Unpadded size: 250.04M
+     Extra memory due to padding: 250.04M (2.0x expansion)
+     XLA label: %fusion.5946.remat_uncompressed.remat5 = f32[16,253,253,64]{3,0,2,1:T(8,128)} copy(f32[16,253,253,64]{2,3,1,0} %fusion.5946.remat_compressed)
+     Allocation type: HLO temp
+     ==========================
+
+  2. Size: 500.07M
+     Operator: op_type="Conv2D" op_name="flower__classifier_1/xception/block2_sepconv2/separable_conv2d"
+     Shape: f32[16,253,253,128]{3,0,2,1:T(8,128)}
+     Unpadded size: 500.07M
+     XLA label: %fusion.5697.remat4 = f32[16,253,253,128]{3,0,2,1:T(8,128)} fusion(f32[128]{0:T(256)} %fusion.32794, f32[128]{0:T(256)} %get-tuple-element.86907, f32[128]{0:T(256)} %get-tuple-element.86906, f32[128]{0:T(256)} %get-tuple-element.76325, bf16[16,253,253,128]...
+     Allocation type: HLO temp
+     ==========================
+
+  3. Size: 256.00M
+     Operator: op_type="Conv2D" op_name="flower__classifier_1/resnet152v2/conv2_block1_3_conv/Conv2D"
+     Shape: f32[16,128,128,256]{3,0,2,1:T(8,128)}
+     Unpadded size: 256.00M
+     XLA label: %fusion.6153 = (f32[256]{0:T(256)}, f32[256]{0:T(256)}, f32[16,128,128,256]{3,0,2,1:T(8,128)}) fusion(s32[]{:T(256)} %get-tuple-element.82725, f32[256]{0:T(256)} %get-tuple-element.85992, f32[1,1,64,256]{3,2,1,0:T(8,128)} %get-tuple-element.85993, f32[64]{...
+     Allocation type: HLO temp
+     ==========================
+
+  4. Size: 256.00M
+     Operator: op_type="Conv2D" op_name="flower__classifier_1/resnet152v2/conv2_block2_3_conv/Conv2D"
+     Shape: f32[16,128,128,256]{3,0,2,1:T(8,128)}
+     Unpadded size: 256.00M
+     XLA label: %fusion.6155 = (f32[256]{0:T(256)}, f32[256]{0:T(256)}, f32[16,128,128,256]{3,0,2,1:T(8,128)}) fusion(s32[]{:T(256)} %get-tuple-element.82725, f32[16,128,128,256]{3,0,2,1:T(8,128)} %get-tuple-element.82098, f32[256]{0:T(256)} %get-tuple-element.86008, f32[...
+     Allocation type: HLO temp
+     ==========================
+
+  5. Size: 256.00M
+     Operator: op_name="XLA_Args"
+     Shape: bf16[16,512,512,3]{0,3,2,1:T(4,128)(2,1)}
+     Unpadded size: 24.00M
+     Extra memory due to padding: 232.00M (10.7x expansion)
+     XLA label: %copy.2410.remat2.1.remat2 = bf16[16,512,512,3]{0,3,2,1:T(4,128)(2,1)} copy(f32[16,512,512,3]{2,1,3,0:T(8,128)} %get-tuple-element.82723), metadata={op_name="XLA_Args"}
+     Allocation type: HLO temp
+     ==========================
+
+  6. Size: 253.00M
+     Shape: f3 ... [truncated]</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+train_input_signature = [
+    tf.TensorSpec(shape=(None, None, None, None), dtype=tf.float32),
+    tf.TensorSpec(shape=(None,), dtype=tf.int32)
+]
+valid_input_signature = train_input_signature
+test_input_signature = [
+    tf.TensorSpec(shape=(None, None, None, None), dtype=tf.float32),
+]
+
+with strategy.scope():
+    @tf.function(input_signature=train_input_signature)
+    def train_step(images, labels):
+        with tf.GradientTape() as tape:
+            prob_dists = flower_classifier(images, training=True)
+            loss = loss_function(labels, prob_dists)
+            train_acc_obj(labels, prob_dists)
+
+        grads = tape.gradient(loss, flower_classifier.trainable_variables)
+        grads, global_norm = tf.clip_by_global_norm(grads, clip_norm=1.0)
+        opt.apply_gradients(zip(grads, flower_classifier.trainable_variables))
+        return loss
+    
+    @tf.function
+    def distributed_train_step(inputs):
+        (images, labels) = inputs
+        loss = strategy.run(train_step, args=(images, labels))
+
+    @tf.function(input_signature=valid_input_signature)
+    def valid_step(images, labels):
+        prob_dists =flower_classifier(images, training=False)
+        loss = loss_function(labels, prob_dists, sample_weights=None)
+        valid_acc_obj(labels, prob_dists)
+        return loss, prob_dists
+
+    @tf.function
+    def distributed_valid_step(inputs):
+        (images, labels) = inputs
+        loss, prob_dists = strategy.run(valid_step, args=(images,labels))
+        return loss, prob_dists
+
+    @tf.function(input_signature=test_input_signature)
+    def test_step(images):
+        prob_dists = flower_classifier(images, training=False)
+        return prob_dists
+
+    @tf.function
+    def distributed_test_step(inputs):
+        images = inputs
+        prob_dists = strategy.run(test_step, args=(images,))
+        return prob_dists
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+keys = ['train_loss', 'train_acc', 'valid_loss', 'valid_acc',
+        'valid_f1', 'valid_precision', 'valid_recall', 'model_coefs']
+history = { k:[] for k in keys}
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+TRAIN_NSTEPS = math.ceil(count_data_items(train_filenames) / BATCH_SIZE)
+VALID_NSTEPS = math.ceil(count_data_items(valid_filenames) / BATCH_SIZE)
+TEST_NSTEPS = math.ceil(count_data_items(test_filenames) / BATCH_SIZE)
+(TRAIN_NSTEPS, VALID_NSTEPS, TEST_NSTEPS)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+valid_ds = get_valid_dataset(valid_filenames, ordered=True)
+valid_dist_ds = strategy.experimental_distribute_dataset(valid_ds)
+
+test_ds = get_test_dataset(test_filenames, ordered=True).map(lambda im,lbl: im)
+test_dist_ds = strategy.experimental_distribute_dataset(test_ds)
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+cm_trues = (valid_ds.map(lambda im,lbl: lbl)
+                    .unbatch()
+                    .batch(count_data_items(valid_filenames))
+                    .as_numpy_iterator()
+                    .next())
 </pre></div>
 
     </div>
@@ -1640,160 +1899,59 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
-    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">get_train_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">)</span>
-    <span class="n">train_ds</span> <span class="o">=</span> <span class="n">train_ds</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">train_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">experimental_distribute_dataset</span><span class="p">(</span><span class="n">train_ds</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">run_if</span> {False}
+for epoch in range(EPOCHS):
+    train_ds = get_train_dataset(train_filenames)
+    train_ds = train_ds.take(2)
+    train_dist_ds = strategy.experimental_distribute_dataset(train_ds)
 
-    <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-    <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-    <span class="n">valid_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-    <span class="n">valid_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+    train_loss_obj.reset_states()
+    train_acc_obj.reset_states()
+    valid_loss_obj.reset_states()
+    valid_acc_obj.reset_states()
 
-    <span class="k">for</span> <span class="n">ibatch</span><span class="p">,</span> <span class="n">inputs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_dist_ds</span><span class="p">):</span>
-        <span class="n">per_replica_train_loss</span> <span class="o">=</span> <span class="n">distributed_train_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="n">train_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">per_replica_train_loss</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">train_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math_reduce_sum</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span>
-        <span class="n">train_loss_obj</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span>
+    for ibatch, inputs in enumerate(train_dist_ds):
+        per_replica_train_loss = distributed_train_step(inputs)
+        train_loss = tf.stack(per_replica_train_loss.values, axis=0)
+        train_loss = tf.math_reduce_sum(train_loss)
+        train_loss_obj(train_loss)
 
-    <span class="c1"># print epoch training results</span>
-    <span class="c1"># store the epoch training result</span>
-    <span class="n">history</span><span class="p">[</span><span class="s1">'train_loss'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-    <span class="n">history</span><span class="p">[</span><span class="s1">'train_acc'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    # print epoch training results
+    # store the epoch training result
+    history['train_loss'].append(train_loss_obj.result())
+    history['train_acc'].append(train_acc_obj.result())
 
-    <span class="n">all_valid_preds</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">ibatch</span><span class="p">,</span> <span class="n">inputs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_dist_ds</span><span class="p">):</span>
-        <span class="n">per_replica_valid_loss</span><span class="p">,</span> <span class="n">per_replica_valid_preds</span> <span class="o">=</span> <span class="n">distributed_valid_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="n">valid_preds</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">per_replica_valid_preds</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">valid_preds</span> <span class="o">=</span> <span class="n">valid_preds</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    all_valid_preds = []
+    for ibatch, inputs in enumerate(valid_dist_ds):
+        per_replica_valid_loss, per_replica_valid_preds = distributed_valid_step(inputs)
+        valid_preds = tf.concat(per_replica_valid_preds.values, axis=0)
+        valid_preds = valid_preds.numpy()
 
-        <span class="n">all_valid_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid_preds</span><span class="p">)</span>
+        all_valid_preds.append(valid_preds)
 
-        <span class="n">valid_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">per_replica_valid_loss</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">valid_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">valid_loss</span><span class="p">)</span>
-        <span class="n">valid_loss_obj</span><span class="p">(</span><span class="n">valid_loss</span><span class="p">)</span>
+        valid_loss = tf.stack(per_replica_valid_loss.values, axis=0)
+        valid_loss = tf.math.reduce_sum(valid_loss)
+        valid_loss_obj(valid_loss)
 
-    <span class="n">history</span><span class="p">[</span><span class="s1">'valid_loss'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-    <span class="n">history</span><span class="p">[</span><span class="s1">'valid_acc'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">valid_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
-    <span class="n">all_valid_preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">all_valid_preds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    history['valid_loss'].append(valid_loss_obj.result())
+    history['valid_acc'].append(valid_acc_obj.result())
+    all_valid_preds = np.concatenate(all_valid_preds, axis=0, out=None)
 
-    <span class="n">cm_preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">all_valid_preds</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">f1</span> <span class="o">=</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">cm_trues</span><span class="p">,</span> <span class="n">cm_preds</span><span class="p">,</span>
-                  <span class="n">labels</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">NCLASSES</span><span class="p">),</span> <span class="n">average</span><span class="o">=</span><span class="s1">'macro'</span><span class="p">)</span>
-    <span class="n">precision</span> <span class="o">=</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">cm_trues</span><span class="p">,</span> <span class="n">cm_preds</span><span class="p">,</span>
-                  <span class="n">labels</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">NCLASSES</span><span class="p">),</span> <span class="n">average</span><span class="o">=</span><span class="s1">'macro'</span><span class="p">)</span>
-    <span class="n">recall</span> <span class="o">=</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">cm_trues</span><span class="p">,</span> <span class="n">cm_preds</span><span class="p">,</span>
-                  <span class="n">labels</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">NCLASSES</span><span class="p">),</span> <span class="n">average</span><span class="o">=</span><span class="s1">'macro'</span><span class="p">)</span>    
+    cm_preds = np.argmax(all_valid_preds, axis=-1)
+    f1 = f1_score(cm_trues, cm_preds,
+                  labels=range(NCLASSES), average='macro')
+    precision = precision_score(cm_trues, cm_preds,
+                  labels=range(NCLASSES), average='macro')
+    recall = recall_score(cm_trues, cm_preds,
+                  labels=range(NCLASSES), average='macro')    
 
-    <span class="n">history</span><span class="p">[</span><span class="s1">'valid_f1'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span>        
-    <span class="n">history</span><span class="p">[</span><span class="s1">'valid_precision'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">precision</span><span class="p">)</span>
-    <span class="n">history</span><span class="p">[</span><span class="s1">'valid_recall'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">recall</span><span class="p">)</span>
-    <span class="n">history</span><span class="p">[</span><span class="s1">'model_coefs'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flower_classifier</span><span class="o">.</span><span class="n">prob_dist_weight</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    history['valid_f1'].append(f1)        
+    history['valid_precision'].append(precision)
+    history['valid_recall'].append(recall)
+    history['model_coefs'].append(flower_classifier.prob_dist_weight(tf.constant(1, shape=(1, 1))).numpy()[0])
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-43-d908d1c379bc&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">     10</span> 
-<span class="ansi-green-intense-fg ansi-bold">     11</span>     <span class="ansi-green-fg">for</span> ibatch<span class="ansi-blue-fg">,</span> inputs <span class="ansi-green-fg">in</span> enumerate<span class="ansi-blue-fg">(</span>train_dist_ds<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 12</span><span class="ansi-red-fg">         </span>per_replica_train_loss <span class="ansi-blue-fg">=</span> distributed_train_step<span class="ansi-blue-fg">(</span>inputs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span>         train_loss <span class="ansi-blue-fg">=</span> tf<span class="ansi-blue-fg">.</span>stack<span class="ansi-blue-fg">(</span>per_replica_train_loss<span class="ansi-blue-fg">.</span>values<span class="ansi-blue-fg">,</span> axis<span class="ansi-blue-fg">=</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     14</span>         train_loss <span class="ansi-blue-fg">=</span> tf<span class="ansi-blue-fg">.</span>math_reduce_sum<span class="ansi-blue-fg">(</span>train_loss<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    826</span>     tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    827</span>     <span class="ansi-green-fg">with</span> trace<span class="ansi-blue-fg">.</span>Trace<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_name<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> tm<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 828</span><span class="ansi-red-fg">       </span>result <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_call<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    829</span>       compiler <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">"xla"</span> <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>_experimental_compile <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">"nonXla"</span>
-<span class="ansi-green-intense-fg ansi-bold">    830</span>       new_tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">_call</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    869</span>       <span class="ansi-red-fg"># This is the first call of __call__, so we have to initialize.</span>
-<span class="ansi-green-intense-fg ansi-bold">    870</span>       initializers <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-fg">--&gt; 871</span><span class="ansi-red-fg">       </span>self<span class="ansi-blue-fg">.</span>_initialize<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwds<span class="ansi-blue-fg">,</span> add_initializers_to<span class="ansi-blue-fg">=</span>initializers<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    872</span>     <span class="ansi-green-fg">finally</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    873</span>       <span class="ansi-red-fg"># At this point we know that the initialization is complete (or less</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">_initialize</span><span class="ansi-blue-fg">(self, args, kwds, add_initializers_to)</span>
-<span class="ansi-green-intense-fg ansi-bold">    724</span>     self._concrete_stateful_fn = (
-<span class="ansi-green-intense-fg ansi-bold">    725</span>         self._stateful_fn._get_concrete_function_internal_garbage_collected(  # pylint: disable=protected-access
-<span class="ansi-green-fg">--&gt; 726</span><span class="ansi-red-fg">             *args, **kwds))
-</span><span class="ansi-green-intense-fg ansi-bold">    727</span> 
-<span class="ansi-green-intense-fg ansi-bold">    728</span>     <span class="ansi-green-fg">def</span> invalid_creator_scope<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>unused_args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>unused_kwds<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_get_concrete_function_internal_garbage_collected</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2967</span>       args<span class="ansi-blue-fg">,</span> kwargs <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span>
-<span class="ansi-green-intense-fg ansi-bold">   2968</span>     <span class="ansi-green-fg">with</span> self<span class="ansi-blue-fg">.</span>_lock<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">-&gt; 2969</span><span class="ansi-red-fg">       </span>graph_function<span class="ansi-blue-fg">,</span> _ <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_maybe_define_function<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2970</span>     <span class="ansi-green-fg">return</span> graph_function
-<span class="ansi-green-intense-fg ansi-bold">   2971</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_maybe_define_function</span><span class="ansi-blue-fg">(self, args, kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   3359</span> 
-<span class="ansi-green-intense-fg ansi-bold">   3360</span>           self<span class="ansi-blue-fg">.</span>_function_cache<span class="ansi-blue-fg">.</span>missed<span class="ansi-blue-fg">.</span>add<span class="ansi-blue-fg">(</span>call_context_key<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">-&gt; 3361</span><span class="ansi-red-fg">           </span>graph_function <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_create_graph_function<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   3362</span>           self<span class="ansi-blue-fg">.</span>_function_cache<span class="ansi-blue-fg">.</span>primary<span class="ansi-blue-fg">[</span>cache_key<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> graph_function
-<span class="ansi-green-intense-fg ansi-bold">   3363</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_create_graph_function</span><span class="ansi-blue-fg">(self, args, kwargs, override_flat_arg_shapes)</span>
-<span class="ansi-green-intense-fg ansi-bold">   3204</span>             arg_names<span class="ansi-blue-fg">=</span>arg_names<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   3205</span>             override_flat_arg_shapes<span class="ansi-blue-fg">=</span>override_flat_arg_shapes<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">-&gt; 3206</span><span class="ansi-red-fg">             capture_by_value=self._capture_by_value),
-</span><span class="ansi-green-intense-fg ansi-bold">   3207</span>         self<span class="ansi-blue-fg">.</span>_function_attributes<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">   3208</span>         function_spec<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>function_spec<span class="ansi-blue-fg">,</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/func_graph.py</span> in <span class="ansi-cyan-fg">func_graph_from_py_func</span><span class="ansi-blue-fg">(name, python_func, args, kwargs, signature, func_graph, autograph, autograph_options, add_control_dependencies, arg_names, op_return_value, collections, capture_by_value, override_flat_arg_shapes)</span>
-<span class="ansi-green-intense-fg ansi-bold">    988</span>         _<span class="ansi-blue-fg">,</span> original_func <span class="ansi-blue-fg">=</span> tf_decorator<span class="ansi-blue-fg">.</span>unwrap<span class="ansi-blue-fg">(</span>python_func<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    989</span> 
-<span class="ansi-green-fg">--&gt; 990</span><span class="ansi-red-fg">       </span>func_outputs <span class="ansi-blue-fg">=</span> python_func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>func_args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>func_kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    991</span> 
-<span class="ansi-green-intense-fg ansi-bold">    992</span>       <span class="ansi-red-fg"># invariant: `func_outputs` contains only Tensors, CompositeTensors,</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">wrapped_fn</span><span class="ansi-blue-fg">(*args, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    632</span>             xla_context<span class="ansi-blue-fg">.</span>Exit<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    633</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 634</span><span class="ansi-red-fg">           </span>out <span class="ansi-blue-fg">=</span> weak_wrapped_fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>__wrapped__<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    635</span>         <span class="ansi-green-fg">return</span> out
-<span class="ansi-green-intense-fg ansi-bold">    636</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/func_graph.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    975</span>           <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint:disable=broad-except</span>
-<span class="ansi-green-intense-fg ansi-bold">    976</span>             <span class="ansi-green-fg">if</span> hasattr<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">"ag_error_metadata"</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 977</span><span class="ansi-red-fg">               </span><span class="ansi-green-fg">raise</span> e<span class="ansi-blue-fg">.</span>ag_error_metadata<span class="ansi-blue-fg">.</span>to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    978</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    979</span>               <span class="ansi-green-fg">raise</span>
-
-<span class="ansi-red-fg">ValueError</span>: in user code:
-
-    &lt;ipython-input-38-04feeb3677bf&gt;:26 distributed_train_step  *
-        loss = strategy.run(train_step, args=(images, labels))
-    &lt;ipython-input-38-04feeb3677bf&gt;:20 train_step  *
-        opt.apply_gradients(zip(grads, flower_classifier.trainable_variables))
-    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:604 apply_gradients  **
-        self._create_all_weights(var_list)
-    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:783 _create_all_weights
-        self._create_slots(var_list)
-    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/adam.py:127 _create_slots
-        self.add_slot(var, 'm')
-    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:844 add_slot
-        .format(strategy, var))
-
-    ValueError: Trying to create optimizer slot variable under the scope for tf.distribute.Strategy (&lt;tensorflow.python.distribute.tpu_strategy.TPUStrategy object at 0x7fed69fcf940&gt;), which is different from the scope used for the original variable (&lt;tf.Variable 'layer_normalization/gamma:0' shape=(2048,) dtype=float32, numpy=array([1., 1., 1., ..., 1., 1., 1.], dtype=float32)&gt;). Make sure the slot variables are created under the same strategy scope. This may happen if you're restoring from a checkpoint outside the scope
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
