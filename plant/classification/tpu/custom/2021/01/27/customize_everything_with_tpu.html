@@ -1112,7 +1112,7 @@ Number of test set:  7382
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
-    <span class="n">flower_classifier</span> <span class="o">=</span> <span class="n">Flower_Classifier</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Flower_Classifier</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -1141,7 +1141,7 @@ Number of test set:  7382
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">flower_classifier</span><span class="o">.</span><span class="n">model</span><span class="p">()</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">()</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -1510,46 +1510,7 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">BATCH_SIZE</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>128</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">Flower_Classifier</span><span class="p">()</span>
-  <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">schedule</span><span class="p">)</span>
-  <span class="n">training_loss</span><span class="p">,</span> <span class="n">training_accuracy</span> <span class="o">=</span> <span class="n">get_metrics</span><span class="p">(</span><span class="s2">"train"</span><span class="p">)</span>
-
-<span class="c1"># Calculate per replica batch size, and distribute the datasets</span>
-<span class="c1"># on each TPU worker.</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># on each TPU worker.</span>
 <span class="n">per_replica_batch_size</span> <span class="o">=</span> <span class="n">BATCH_SIZE</span> <span class="o">//</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span>
 <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">distribute_datasets_from_function</span><span class="p">(</span>
     <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">get_train_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">,</span> <span class="n">per_replica_batch_size</span><span class="p">))</span>
@@ -1567,9 +1528,9 @@ this is great for debugging, but graph compilation has a definite performace adv
 
     <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
     <span class="c1">#grads, global_norm = tf.clip_by_global_norm(grads, clip_norm=1.0)</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)))</span>
-    <span class="n">training_loss</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">)</span>
-    <span class="n">training_accuracy</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)))</span>
+    <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">)</span>
+    <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
 
   <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">step_fn</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">iterator</span><span class="p">),))</span>
 </pre></div>
@@ -1598,10 +1559,10 @@ this is great for debugging, but graph compilation has a definite performace adv
     <span class="n">train_step</span><span class="p">(</span><span class="n">train_iterator</span><span class="p">)</span>
   <span class="nb">print</span><span class="p">(</span><span class="s1">'Current step: </span><span class="si">{}</span><span class="s1">, training loss: </span><span class="si">{}</span><span class="s1">, accuracy: </span><span class="si">{}</span><span class="s1">%'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
       <span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
-      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">training_loss</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span> <span class="mi">4</span><span class="p">),</span>
-      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">training_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">())</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-  <span class="n">training_loss</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-  <span class="n">training_accuracy</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span> <span class="mi">4</span><span class="p">),</span>
+      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+  <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+  <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -1624,97 +1585,92 @@ this is great for debugging, but graph compilation has a definite performace adv
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ResourceExhaustedError</span>                    Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-41-a8e91e39573a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      8</span>     train_step<span class="ansi-blue-fg">(</span>train_iterator<span class="ansi-blue-fg">)</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-41-afc0e6df6f23&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">      6</span> 
+<span class="ansi-green-intense-fg ansi-bold">      7</span>   <span class="ansi-green-fg">for</span> step <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>steps_per_epoch<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">----&gt; 8</span><span class="ansi-red-fg">     </span>train_step<span class="ansi-blue-fg">(</span>train_iterator<span class="ansi-blue-fg">)</span>
 <span class="ansi-green-intense-fg ansi-bold">      9</span>   print('Current step: {}, training loss: {}, accuracy: {}%'.format(
-<span class="ansi-green-fg">---&gt; 10</span><span class="ansi-red-fg">       </span>optimizer<span class="ansi-blue-fg">.</span>iterations<span class="ansi-blue-fg">.</span>numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">     11</span>       round<span class="ansi-blue-fg">(</span>float<span class="ansi-blue-fg">(</span>training_loss<span class="ansi-blue-fg">.</span>result<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-cyan-fg">4</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span>       round(float(training_accuracy.result()) * 100, 2)))
+<span class="ansi-green-intense-fg ansi-bold">     10</span>       optimizer<span class="ansi-blue-fg">.</span>iterations<span class="ansi-blue-fg">.</span>numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
 
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/distribute/values.py</span> in <span class="ansi-cyan-fg">numpy</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">    738</span>   <span class="ansi-green-fg">def</span> numpy<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    739</span>     <span class="ansi-green-fg">if</span> context<span class="ansi-blue-fg">.</span>executing_eagerly<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 740</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>read_value<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    741</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    742</span>       raise NotImplementedError(
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    826</span>     tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    827</span>     <span class="ansi-green-fg">with</span> trace<span class="ansi-blue-fg">.</span>Trace<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_name<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> tm<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 828</span><span class="ansi-red-fg">       </span>result <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_call<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    829</span>       compiler <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">"xla"</span> <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>_experimental_compile <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">"nonXla"</span>
+<span class="ansi-green-intense-fg ansi-bold">    830</span>       new_tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
 
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">numpy</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1069</span>     """
-<span class="ansi-green-intense-fg ansi-bold">   1070</span>     <span class="ansi-red-fg"># TODO(slebedev): Consider avoiding a copy for non-CPU or remote tensors.</span>
-<span class="ansi-green-fg">-&gt; 1071</span><span class="ansi-red-fg">     </span>maybe_arr <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_numpy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
-<span class="ansi-green-intense-fg ansi-bold">   1072</span>     <span class="ansi-green-fg">return</span> maybe_arr<span class="ansi-blue-fg">.</span>copy<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>maybe_arr<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>ndarray<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">else</span> maybe_arr
-<span class="ansi-green-intense-fg ansi-bold">   1073</span> 
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">_call</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    869</span>       <span class="ansi-red-fg"># This is the first call of __call__, so we have to initialize.</span>
+<span class="ansi-green-intense-fg ansi-bold">    870</span>       initializers <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+<span class="ansi-green-fg">--&gt; 871</span><span class="ansi-red-fg">       </span>self<span class="ansi-blue-fg">.</span>_initialize<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwds<span class="ansi-blue-fg">,</span> add_initializers_to<span class="ansi-blue-fg">=</span>initializers<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    872</span>     <span class="ansi-green-fg">finally</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    873</span>       <span class="ansi-red-fg"># At this point we know that the initialization is complete (or less</span>
 
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">_numpy</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1037</span>       <span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_numpy_internal<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1038</span>     <span class="ansi-green-fg">except</span> core<span class="ansi-blue-fg">.</span>_NotOkStatusException <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
-<span class="ansi-green-fg">-&gt; 1039</span><span class="ansi-red-fg">       </span>six<span class="ansi-blue-fg">.</span>raise_from<span class="ansi-blue-fg">(</span>core<span class="ansi-blue-fg">.</span>_status_to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">.</span>code<span class="ansi-blue-fg">,</span> e<span class="ansi-blue-fg">.</span>message<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=protected-access</span>
-<span class="ansi-green-intense-fg ansi-bold">   1040</span> 
-<span class="ansi-green-intense-fg ansi-bold">   1041</span>   <span class="ansi-blue-fg">@</span>property
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">_initialize</span><span class="ansi-blue-fg">(self, args, kwds, add_initializers_to)</span>
+<span class="ansi-green-intense-fg ansi-bold">    724</span>     self._concrete_stateful_fn = (
+<span class="ansi-green-intense-fg ansi-bold">    725</span>         self._stateful_fn._get_concrete_function_internal_garbage_collected(  # pylint: disable=protected-access
+<span class="ansi-green-fg">--&gt; 726</span><span class="ansi-red-fg">             *args, **kwds))
+</span><span class="ansi-green-intense-fg ansi-bold">    727</span> 
+<span class="ansi-green-intense-fg ansi-bold">    728</span>     <span class="ansi-green-fg">def</span> invalid_creator_scope<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>unused_args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>unused_kwds<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
 
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/six.py</span> in <span class="ansi-cyan-fg">raise_from</span><span class="ansi-blue-fg">(value, from_value)</span>
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_get_concrete_function_internal_garbage_collected</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2967</span>       args<span class="ansi-blue-fg">,</span> kwargs <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span>
+<span class="ansi-green-intense-fg ansi-bold">   2968</span>     <span class="ansi-green-fg">with</span> self<span class="ansi-blue-fg">.</span>_lock<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">-&gt; 2969</span><span class="ansi-red-fg">       </span>graph_function<span class="ansi-blue-fg">,</span> _ <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_maybe_define_function<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   2970</span>     <span class="ansi-green-fg">return</span> graph_function
+<span class="ansi-green-intense-fg ansi-bold">   2971</span> 
 
-<span class="ansi-red-fg">ResourceExhaustedError</span>: 9 root error(s) found.
-  (0) Resource exhausted: {{function_node __inference_train_step_663588}} Compilation failure: Ran out of memory in memory space hbm. Used 13.31G of 7.48G hbm. Exceeded hbm capacity by 5.82G.
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_maybe_define_function</span><span class="ansi-blue-fg">(self, args, kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">   3359</span> 
+<span class="ansi-green-intense-fg ansi-bold">   3360</span>           self<span class="ansi-blue-fg">.</span>_function_cache<span class="ansi-blue-fg">.</span>missed<span class="ansi-blue-fg">.</span>add<span class="ansi-blue-fg">(</span>call_context_key<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">-&gt; 3361</span><span class="ansi-red-fg">           </span>graph_function <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_create_graph_function<span class="ansi-blue-fg">(</span>args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">   3362</span>           self<span class="ansi-blue-fg">.</span>_function_cache<span class="ansi-blue-fg">.</span>primary<span class="ansi-blue-fg">[</span>cache_key<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> graph_function
+<span class="ansi-green-intense-fg ansi-bold">   3363</span> 
 
-Total hbm usage &gt;= 13.82G:
-    reserved        530.00M 
-    program          13.31G 
-    arguments       unknown size 
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_create_graph_function</span><span class="ansi-blue-fg">(self, args, kwargs, override_flat_arg_shapes)</span>
+<span class="ansi-green-intense-fg ansi-bold">   3204</span>             arg_names<span class="ansi-blue-fg">=</span>arg_names<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   3205</span>             override_flat_arg_shapes<span class="ansi-blue-fg">=</span>override_flat_arg_shapes<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">-&gt; 3206</span><span class="ansi-red-fg">             capture_by_value=self._capture_by_value),
+</span><span class="ansi-green-intense-fg ansi-bold">   3207</span>         self<span class="ansi-blue-fg">.</span>_function_attributes<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">   3208</span>         function_spec<span class="ansi-blue-fg">=</span>self<span class="ansi-blue-fg">.</span>function_spec<span class="ansi-blue-fg">,</span>
 
-Output size unknown.
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/func_graph.py</span> in <span class="ansi-cyan-fg">func_graph_from_py_func</span><span class="ansi-blue-fg">(name, python_func, args, kwargs, signature, func_graph, autograph, autograph_options, add_control_dependencies, arg_names, op_return_value, collections, capture_by_value, override_flat_arg_shapes)</span>
+<span class="ansi-green-intense-fg ansi-bold">    988</span>         _<span class="ansi-blue-fg">,</span> original_func <span class="ansi-blue-fg">=</span> tf_decorator<span class="ansi-blue-fg">.</span>unwrap<span class="ansi-blue-fg">(</span>python_func<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    989</span> 
+<span class="ansi-green-fg">--&gt; 990</span><span class="ansi-red-fg">       </span>func_outputs <span class="ansi-blue-fg">=</span> python_func<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>func_args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>func_kwargs<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    991</span> 
+<span class="ansi-green-intense-fg ansi-bold">    992</span>       <span class="ansi-red-fg"># invariant: `func_outputs` contains only Tensors, CompositeTensors,</span>
 
-Program hbm requirement 13.31G:
-    global            84.0K
-    scoped          128.81M
-    HLO temp         13.18G (86.0% utilization: Unpadded (11.00G) Padded (12.80G), 2.9% fragmentation (389.92M))
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">wrapped_fn</span><span class="ansi-blue-fg">(*args, **kwds)</span>
+<span class="ansi-green-intense-fg ansi-bold">    632</span>             xla_context<span class="ansi-blue-fg">.</span>Exit<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    633</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 634</span><span class="ansi-red-fg">           </span>out <span class="ansi-blue-fg">=</span> weak_wrapped_fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>__wrapped__<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    635</span>         <span class="ansi-green-fg">return</span> out
+<span class="ansi-green-intense-fg ansi-bold">    636</span> 
 
-  Largest program allocations in hbm:
+<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/func_graph.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    975</span>           <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint:disable=broad-except</span>
+<span class="ansi-green-intense-fg ansi-bold">    976</span>             <span class="ansi-green-fg">if</span> hasattr<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">"ag_error_metadata"</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 977</span><span class="ansi-red-fg">               </span><span class="ansi-green-fg">raise</span> e<span class="ansi-blue-fg">.</span>ag_error_metadata<span class="ansi-blue-fg">.</span>to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    978</span>             <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    979</span>               <span class="ansi-green-fg">raise</span>
 
-  1. Size: 500.07M
-     Shape: f32[16,253,253,64]{3,0,2,1:T(8,128)}
-     Unpadded size: 250.04M
-     Extra memory due to padding: 250.04M (2.0x expansion)
-     XLA label: %fusion.5946.remat_uncompressed.remat5 = f32[16,253,253,64]{3,0,2,1:T(8,128)} copy(f32[16,253,253,64]{2,3,1,0} %fusion.5946.remat_compressed)
-     Allocation type: HLO temp
-     ==========================
+<span class="ansi-red-fg">ValueError</span>: in user code:
 
-  2. Size: 500.07M
-     Operator: op_type="Conv2D" op_name="flower__classifier_1/xception/block2_sepconv2/separable_conv2d"
-     Shape: f32[16,253,253,128]{3,0,2,1:T(8,128)}
-     Unpadded size: 500.07M
-     XLA label: %fusion.5697.remat4 = f32[16,253,253,128]{3,0,2,1:T(8,128)} fusion(f32[128]{0:T(256)} %fusion.32794, f32[128]{0:T(256)} %get-tuple-element.86907, f32[128]{0:T(256)} %get-tuple-element.86906, f32[128]{0:T(256)} %get-tuple-element.76325, bf16[16,253,253,128]...
-     Allocation type: HLO temp
-     ==========================
+    &lt;ipython-input-40-ee803cc0898b&gt;:20 step_fn  *
+        opt.apply_gradients(list(zip(grads, model.trainable_variables)))
+    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:604 apply_gradients  **
+        self._create_all_weights(var_list)
+    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:783 _create_all_weights
+        self._create_slots(var_list)
+    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/adam.py:127 _create_slots
+        self.add_slot(var, 'm')
+    /usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/optimizer_v2/optimizer_v2.py:844 add_slot
+        .format(strategy, var))
 
-  3. Size: 256.00M
-     Operator: op_type="Conv2D" op_name="flower__classifier_1/resnet152v2/conv2_block1_3_conv/Conv2D"
-     Shape: f32[16,128,128,256]{3,0,2,1:T(8,128)}
-     Unpadded size: 256.00M
-     XLA label: %fusion.6153 = (f32[256]{0:T(256)}, f32[256]{0:T(256)}, f32[16,128,128,256]{3,0,2,1:T(8,128)}) fusion(s32[]{:T(256)} %get-tuple-element.82725, f32[256]{0:T(256)} %get-tuple-element.85992, f32[1,1,64,256]{3,2,1,0:T(8,128)} %get-tuple-element.85993, f32[64]{...
-     Allocation type: HLO temp
-     ==========================
-
-  4. Size: 256.00M
-     Operator: op_type="Conv2D" op_name="flower__classifier_1/resnet152v2/conv2_block2_3_conv/Conv2D"
-     Shape: f32[16,128,128,256]{3,0,2,1:T(8,128)}
-     Unpadded size: 256.00M
-     XLA label: %fusion.6155 = (f32[256]{0:T(256)}, f32[256]{0:T(256)}, f32[16,128,128,256]{3,0,2,1:T(8,128)}) fusion(s32[]{:T(256)} %get-tuple-element.82725, f32[16,128,128,256]{3,0,2,1:T(8,128)} %get-tuple-element.82098, f32[256]{0:T(256)} %get-tuple-element.86008, f32[...
-     Allocation type: HLO temp
-     ==========================
-
-  5. Size: 256.00M
-     Operator: op_name="XLA_Args"
-     Shape: bf16[16,512,512,3]{0,3,2,1:T(4,128)(2,1)}
-     Unpadded size: 24.00M
-     Extra memory due to padding: 232.00M (10.7x expansion)
-     XLA label: %copy.2410.remat2.1.remat2 = bf16[16,512,512,3]{0,3,2,1:T(4,128)(2,1)} copy(f32[16,512,512,3]{2,1,3,0:T(8,128)} %get-tuple-element.82723), metadata={op_name="XLA_Args"}
-     Allocation type: HLO temp
-     ==========================
-
-  6. Size: 253.00M
-     Shape: f3 ... [truncated]</pre>
+    ValueError: Trying to create optimizer slot variable under the scope for tf.distribute.Strategy (&lt;tensorflow.python.distribute.tpu_strategy.TPUStrategy object at 0x7fb05b6c7898&gt;), which is different from the scope used for the original variable (&lt;tf.Variable 'layer_normalization/gamma:0' shape=(2048,) dtype=float32, numpy=array([1., 1., 1., ..., 1., 1., 1.], dtype=float32)&gt;). Make sure the slot variables are created under the same strategy scope. This may happen if you're restoring from a checkpoint outside the scope
+</pre>
 </div>
 </div>
 
