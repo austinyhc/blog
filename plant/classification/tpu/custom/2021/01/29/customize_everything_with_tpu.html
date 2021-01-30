@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      16 min read
+      14 min read
     
 </span></p>
 
@@ -313,10 +313,11 @@ window.onload = wrap_img;
 <span class="n">IMG_SIZE</span> <span class="o">=</span> <span class="p">(</span><span class="n">HEIGHT</span><span class="p">,</span> <span class="n">WIDTH</span><span class="p">,</span> <span class="n">CHANNELS</span><span class="p">)</span>
 <span class="n">EPOCHS</span> <span class="o">=</span>  <span class="mi">8</span><span class="c1">#@param {type:"number"}</span>
 <span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">8</span><span class="c1">#@param {type:"raw"}</span>
-<span class="c1">#BATCH_SIZE *= strategy.num_replicas_in_sync</span>
+<span class="n">GLOBAL_BATCH_SIZE</span> <span class="o">=</span> <span class="n">BATCH_SIZE</span> <span class="o">*</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Input size: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">IMG_SIZE</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Train on batch size of </span><span class="si">{}</span><span class="s2"> for </span><span class="si">{}</span><span class="s2"> epochs"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">EPOCHS</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Train on batch size of </span><span class="si">{}</span><span class="s2"> with </span><span class="si">{}</span><span class="s2"> replicas for </span><span class="si">{}</span><span class="s2"> epochs"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">,</span> <span class="n">EPOCHS</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -330,7 +331,7 @@ window.onload = wrap_img;
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Input size: (224, 224, 3)
-Train on batch size of 8 for 8 epochs
+Train on batch size of 8 with 8 replicas for 8 epochs
 </pre>
 </div>
 </div>
@@ -899,14 +900,14 @@ Number of test set:  7382
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">data_augment</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span>
  
 <span class="k">def</span> <span class="nf">get_valid_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="n">ordered</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
@@ -914,7 +915,7 @@ Number of test set:  7382
 
 <span class="k">def</span> <span class="nf">get_test_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> 
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="n">ordered</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span>
@@ -962,40 +963,6 @@ Number of test set:  7382
 </pre></div>
 
     </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">del</span> <span class="n">train_ds</span><span class="p">,</span> <span class="n">valid_ds</span><span class="p">,</span> <span class="n">test_ds</span>
-<span class="kn">import</span> <span class="nn">gc</span><span class="p">;</span> <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>50043</pre>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -1434,14 +1401,64 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_train_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">bs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">data_augment</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">bs</span><span class="p">)</span> <span class="k">if</span> <span class="n">bs</span> <span class="k">else</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
-    <span class="c1"># prefetch the next batch while training</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ds</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">experimental_distribute_dataset</span><span class="p">(</span><span class="n">train_ds</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_input_signature</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">input_signature</span><span class="o">=</span><span class="n">train_input_signature</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
+        <span class="n">prob_dists</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+
+    <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
+    <span class="n">grads</span><span class="p">,</span> <span class="n">global_norm</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">clip_by_global_norm</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">clip_norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">))</span>
+    <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span>
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span> <span class="nf">distributed_train_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="n">per_replica_losses</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_step</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">strategy</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span> <span class="n">per_replica_losses</span><span class="p">,</span>
+                               <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">dist_input</span> <span class="ow">in</span> <span class="n">train_dist_ds</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">distributed_train_step</span><span class="p">(</span><span class="n">dist_input</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -1463,7 +1480,7 @@ this is great for debugging, but graph compilation has a definite performace adv
 <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">distribute_datasets_from_function</span><span class="p">(</span>
     <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">get_train_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">,</span> <span class="n">per_replica_batch_size</span><span class="p">))</span>
 
-<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">input_signature</span><span class="o">=</span><span class="n">train_input_signature</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
     <span class="sd">"""The step function for one training step"""</span>
     
@@ -1490,14 +1507,23 @@ this is great for debugging, but graph compilation has a definite performace adv
 </div>
     
 
-<div class="cell border-box-sizing text_cell rendered">
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
 <div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Issue: the step in not continuous between epochs</p>
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
 
 </div>
-</div>
-</div>
+    
+
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1507,21 +1533,40 @@ this is great for debugging, but graph compilation has a definite performace adv
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
 <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+</pre></div>
 
-<span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="n">NSTEPS</span> <span class="o">//</span> <span class="n">EPOCHS</span>
-<span class="n">train_iterator</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+    </div>
+</div>
+</div>
 
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
-    <span class="n">step_start</span> <span class="o">=</span> <span class="n">epoch</span> <span class="o">*</span> <span class="n">steps_per_epoch</span>
-    <span class="n">step_end</span> <span class="o">=</span> <span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">steps_per_epoch</span>
-    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">step_start</span><span class="p">,</span> <span class="n">step_end</span><span class="p">):</span>
-        <span class="n">train_step</span><span class="p">(</span><span class="n">train_iterator</span><span class="p">)</span>
-        
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'Epoch </span><span class="si">{}</span><span class="s1">: training loss: </span><span class="si">{}</span><span class="s1">, accuracy: </span><span class="si">{}</span><span class="s1">%'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-      <span class="n">epoch</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span> <span class="mi">4</span><span class="p">),</span>
-      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-    <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_step</span><span class="p">(</span><span class="n">train_iterator</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">opt</span><span class="o">.</span><span class="n">iterations</span>
 </pre></div>
 
     </div>
@@ -1533,89 +1578,53 @@ this is great for debugging, but graph compilation has a definite performace adv
 
 <div class="output_area">
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Epoch 0: training loss: nan, accuracy: 2.13%
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>TPUMirroredVariable:{
+  0: &lt;tf.Variable 'Adam/iter:0' shape=() dtype=int64, numpy=1&gt;,
+  1: &lt;tf.Variable 'Adam/iter/replica_1:0' shape=() dtype=int64, numpy=1&gt;,
+  2: &lt;tf.Variable 'Adam/iter/replica_2:0' shape=() dtype=int64, numpy=1&gt;,
+  3: &lt;tf.Variable 'Adam/iter/replica_3:0' shape=() dtype=int64, numpy=1&gt;,
+  4: &lt;tf.Variable 'Adam/iter/replica_4:0' shape=() dtype=int64, numpy=1&gt;,
+  5: &lt;tf.Variable 'Adam/iter/replica_5:0' shape=() dtype=int64, numpy=1&gt;,
+  6: &lt;tf.Variable 'Adam/iter/replica_6:0' shape=() dtype=int64, numpy=1&gt;,
+  7: &lt;tf.Variable 'Adam/iter/replica_7:0' shape=() dtype=int64, numpy=1&gt;
+}</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">CancelledError</span>                            Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-42-cbe65b350ae1&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">      9</span>     step_end <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">(</span>epoch<span class="ansi-blue-fg">+</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">*</span> steps_per_epoch
-<span class="ansi-green-intense-fg ansi-bold">     10</span>     <span class="ansi-green-fg">for</span> step <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>step_start<span class="ansi-blue-fg">,</span> step_end<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 11</span><span class="ansi-red-fg">         </span>train_step<span class="ansi-blue-fg">(</span>train_iterator<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     12</span> 
-<span class="ansi-green-intense-fg ansi-bold">     13</span>     print('Epoch {}: training loss: {}, accuracy: {}%'.format(
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    826</span>     tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    827</span>     <span class="ansi-green-fg">with</span> trace<span class="ansi-blue-fg">.</span>Trace<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_name<span class="ansi-blue-fg">)</span> <span class="ansi-green-fg">as</span> tm<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 828</span><span class="ansi-red-fg">       </span>result <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_call<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    829</span>       compiler <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">"xla"</span> <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>_experimental_compile <span class="ansi-green-fg">else</span> <span class="ansi-blue-fg">"nonXla"</span>
-<span class="ansi-green-intense-fg ansi-bold">    830</span>       new_tracing_count <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>experimental_get_tracing_count<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/def_function.py</span> in <span class="ansi-cyan-fg">_call</span><span class="ansi-blue-fg">(self, *args, **kwds)</span>
-<span class="ansi-green-intense-fg ansi-bold">    853</span>       <span class="ansi-red-fg"># In this case we have created variables on the first call, so we run the</span>
-<span class="ansi-green-intense-fg ansi-bold">    854</span>       <span class="ansi-red-fg"># defunned version which is guaranteed to never create variables.</span>
-<span class="ansi-green-fg">--&gt; 855</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">return</span> self<span class="ansi-blue-fg">.</span>_stateless_fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwds<span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=not-callable</span>
-<span class="ansi-green-intense-fg ansi-bold">    856</span>     <span class="ansi-green-fg">elif</span> self<span class="ansi-blue-fg">.</span>_stateful_fn <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    857</span>       <span class="ansi-red-fg"># Release the lock early so that multiple threads can perform the call</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2941</span>        filtered_flat_args) = self._maybe_define_function(args, kwargs)
-<span class="ansi-green-intense-fg ansi-bold">   2942</span>     return graph_function._call_flat(
-<span class="ansi-green-fg">-&gt; 2943</span><span class="ansi-red-fg">         filtered_flat_args, captured_inputs=graph_function.captured_inputs)  # pylint: disable=protected-access
-</span><span class="ansi-green-intense-fg ansi-bold">   2944</span> 
-<span class="ansi-green-intense-fg ansi-bold">   2945</span>   <span class="ansi-blue-fg">@</span>property
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">_call_flat</span><span class="ansi-blue-fg">(self, args, captured_inputs, cancellation_manager)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1917</span>       <span class="ansi-red-fg"># No tape is watching; skip to running the function.</span>
-<span class="ansi-green-intense-fg ansi-bold">   1918</span>       return self._build_call_outputs(self._inference_function.call(
-<span class="ansi-green-fg">-&gt; 1919</span><span class="ansi-red-fg">           ctx, args, cancellation_manager=cancellation_manager))
-</span><span class="ansi-green-intense-fg ansi-bold">   1920</span>     forward_backward = self._select_forward_and_backward_functions(
-<span class="ansi-green-intense-fg ansi-bold">   1921</span>         args<span class="ansi-blue-fg">,</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/function.py</span> in <span class="ansi-cyan-fg">call</span><span class="ansi-blue-fg">(self, ctx, args, cancellation_manager)</span>
-<span class="ansi-green-intense-fg ansi-bold">    558</span>               inputs<span class="ansi-blue-fg">=</span>args<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-intense-fg ansi-bold">    559</span>               attrs<span class="ansi-blue-fg">=</span>attrs<span class="ansi-blue-fg">,</span>
-<span class="ansi-green-fg">--&gt; 560</span><span class="ansi-red-fg">               ctx=ctx)
-</span><span class="ansi-green-intense-fg ansi-bold">    561</span>         <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    562</span>           outputs = execute.execute_with_cancellation(
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/eager/execute.py</span> in <span class="ansi-cyan-fg">quick_execute</span><span class="ansi-blue-fg">(op_name, num_outputs, inputs, attrs, ctx, name)</span>
-<span class="ansi-green-intense-fg ansi-bold">     58</span>     ctx<span class="ansi-blue-fg">.</span>ensure_initialized<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     59</span>     tensors = pywrap_tfe.TFE_Py_Execute(ctx._handle, device_name, op_name,
-<span class="ansi-green-fg">---&gt; 60</span><span class="ansi-red-fg">                                         inputs, attrs, num_outputs)
-</span><span class="ansi-green-intense-fg ansi-bold">     61</span>   <span class="ansi-green-fg">except</span> core<span class="ansi-blue-fg">.</span>_NotOkStatusException <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     62</span>     <span class="ansi-green-fg">if</span> name <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-red-fg">CancelledError</span>: 6 root error(s) found.
-  (0) Cancelled:  Function was cancelled before it was started
-  (1) Cancelled:  Function was cancelled before it was started
-  (2) Cancelled:  Iterator was cancelled
-	 [[node IteratorGetNextAsOptional_2 (defined at &lt;ipython-input-40-af77366057fb&gt;:24) ]]
-  (3) Cancelled:  Function was cancelled before it was started
-  (4) Cancelled:  Function was cancelled before it was started
-  (5) Cancelled:  Function was cancelled before it was started
-0 successful operations.
-3 derived errors ignored.
-	Encountered when executing an operation using EagerExecutor. This error cancels all future operations and poisons their output tensors. [Op:__inference_train_step_696066]
-
-Errors may have originated from an input operation.
-Input Source operations connected to node IteratorGetNextAsOptional_2:
- iterator_6 (defined at &lt;ipython-input-41-eb55df982e15&gt;:13)
-
-Function call stack:
-train_step -&gt; train_step -&gt; train_step -&gt; train_step -&gt; train_step -&gt; train_step
-</pre>
 </div>
-</div>
+    
 
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+<span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+
+<span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="n">NSTEPS</span> <span class="n">ㄏin_dataset</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">step_start</span><span class="p">,</span> <span class="n">step_end</span><span class="p">):</span>
+        <span class="n">train_step</span><span class="p">(</span><span class="n">train_iterator</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Epoch </span><span class="si">{}</span><span class="s1">: training loss: </span><span class="si">{}</span><span class="s1">, accuracy: </span><span class="si">{}</span><span class="s1">%'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+      <span class="n">epoch</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span> <span class="mi">4</span><span class="p">),</span>
+      <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+    <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+</pre></div>
+
+    </div>
 </div>
 </div>
 
@@ -1675,7 +1684,7 @@ train_input_signature = [
 valid_input_signature = train_input_signature
 test_input_signature = [
     tf.TensorSpec(shape=(None, None, None, None), dtype=tf.float32),
-]
+
 
 with strategy.scope():
     @tf.function(input_signature=train_input_signature)
