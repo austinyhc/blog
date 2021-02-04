@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      17 min read
+      14 min read
     
 </span></p>
 
@@ -907,14 +907,14 @@ Number of test set:  7382
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">data_augment</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span>
  
 <span class="k">def</span> <span class="nf">get_valid_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="n">ordered</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
     <span class="n">ds</span><span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
@@ -922,7 +922,7 @@ Number of test set:  7382
 
 <span class="k">def</span> <span class="nf">get_test_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span> 
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="n">ordered</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">GLOBAL_BATCH_SIZE</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span>
@@ -1478,6 +1478,14 @@ Downloading data from https://storage.googleapis.com/tensorflow/keras-applicatio
 </div>
     
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://www.tensorflow.org/api_docs/python/tf/distribute/Strategy#distribute_datasets_from_function">https://www.tensorflow.org/api_docs/python/tf/distribute/Strategy#distribute_datasets_from_function</a></p>
+
+</div>
+</div>
+</div>
     
     
 <div class="cell border-box-sizing code_cell rendered">
@@ -1513,161 +1521,9 @@ Downloading data from https://storage.googleapis.com/tensorflow/keras-applicatio
 
 <div class="output_area">
 
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ResourceExhaustedError</span>                    Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-50-03f56e2cb30a&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">     13</span> <span class="ansi-green-fg">for</span> _ <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">10</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     14</span>     train_loss <span class="ansi-blue-fg">=</span> distributed_train_step<span class="ansi-blue-fg">(</span>next<span class="ansi-blue-fg">(</span>train_iter<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 15</span><span class="ansi-red-fg">     </span>train_loss_obj<span class="ansi-blue-fg">(</span>train_loss<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     16</span>     values=[('train_loss', train_loss_obj.result()),
-<span class="ansi-green-intense-fg ansi-bold">     17</span>             ('train_acc',train_acc_obj.result())]
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    235</span>     <span class="ansi-green-fg">from</span> tensorflow<span class="ansi-blue-fg">.</span>python<span class="ansi-blue-fg">.</span>keras<span class="ansi-blue-fg">.</span>distribute <span class="ansi-green-fg">import</span> distributed_training_utils  <span class="ansi-red-fg"># pylint:disable=g-import-not-at-top</span>
-<span class="ansi-green-intense-fg ansi-bold">    236</span>     return distributed_training_utils.call_replica_local_fn(
-<span class="ansi-green-fg">--&gt; 237</span><span class="ansi-red-fg">         replica_local_fn, *args, **kwargs)
-</span><span class="ansi-green-intense-fg ansi-bold">    238</span> 
-<span class="ansi-green-intense-fg ansi-bold">    239</span>   <span class="ansi-blue-fg">@</span>property
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/distribute/distributed_training_utils.py</span> in <span class="ansi-cyan-fg">call_replica_local_fn</span><span class="ansi-blue-fg">(fn, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     64</span>     <span class="ansi-green-fg">with</span> strategy<span class="ansi-blue-fg">.</span>scope<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     65</span>       <span class="ansi-green-fg">return</span> strategy<span class="ansi-blue-fg">.</span>extended<span class="ansi-blue-fg">.</span>call_for_each_replica<span class="ansi-blue-fg">(</span>fn<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 66</span><span class="ansi-red-fg">   </span><span class="ansi-green-fg">return</span> fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">replica_local_fn</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    215</span>         update_op <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
-<span class="ansi-green-intense-fg ansi-bold">    216</span>       <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 217</span><span class="ansi-red-fg">         </span>update_op <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>update_state<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=not-callable</span>
-<span class="ansi-green-intense-fg ansi-bold">    218</span>       update_ops <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">    219</span>       <span class="ansi-green-fg">if</span> update_op <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/utils/metrics_utils.py</span> in <span class="ansi-cyan-fg">decorated</span><span class="ansi-blue-fg">(metric_obj, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     88</span> 
-<span class="ansi-green-intense-fg ansi-bold">     89</span>     <span class="ansi-green-fg">with</span> tf_utils<span class="ansi-blue-fg">.</span>graph_context_for_symbolic_tensors<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 90</span><span class="ansi-red-fg">       </span>update_op <span class="ansi-blue-fg">=</span> update_state_fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     91</span>     <span class="ansi-green-fg">if</span> update_op <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># update_op will be None in eager execution.</span>
-<span class="ansi-green-intense-fg ansi-bold">     92</span>       metric_obj<span class="ansi-blue-fg">.</span>add_update<span class="ansi-blue-fg">(</span>update_op<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">update_state_fn</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    175</span>         control_status <span class="ansi-blue-fg">=</span> ag_ctx<span class="ansi-blue-fg">.</span>control_status_ctx<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    176</span>         ag_update_state <span class="ansi-blue-fg">=</span> autograph<span class="ansi-blue-fg">.</span>tf_convert<span class="ansi-blue-fg">(</span>obj_update_state<span class="ansi-blue-fg">,</span> control_status<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 177</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> ag_update_state<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    178</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    179</span>       <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">.</span>update_state<span class="ansi-blue-fg">,</span> def_function<span class="ansi-blue-fg">.</span>Function<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    665</span>       <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    666</span>         <span class="ansi-green-fg">with</span> conversion_ctx<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 667</span><span class="ansi-red-fg">           </span><span class="ansi-green-fg">return</span> converted_call<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">,</span> options<span class="ansi-blue-fg">=</span>options<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    668</span>       <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint:disable=broad-except</span>
-<span class="ansi-green-intense-fg ansi-bold">    669</span>         <span class="ansi-green-fg">if</span> hasattr<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">'ag_error_metadata'</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">converted_call</span><span class="ansi-blue-fg">(f, args, kwargs, caller_fn_scope, options)</span>
-<span class="ansi-green-intense-fg ansi-bold">    394</span> 
-<span class="ansi-green-intense-fg ansi-bold">    395</span>   <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> options<span class="ansi-blue-fg">.</span>user_requested <span class="ansi-green-fg">and</span> conversion<span class="ansi-blue-fg">.</span>is_allowlisted<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 396</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _call_unconverted<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">,</span> options<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    397</span> 
-<span class="ansi-green-intense-fg ansi-bold">    398</span>   <span class="ansi-red-fg"># internal_convert_user_code is for example turned off when issuing a dynamic</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">_call_unconverted</span><span class="ansi-blue-fg">(f, args, kwargs, options, update_cache)</span>
-<span class="ansi-green-intense-fg ansi-bold">    476</span> 
-<span class="ansi-green-intense-fg ansi-bold">    477</span>   <span class="ansi-green-fg">if</span> kwargs <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 478</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    479</span>   <span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    480</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">update_state</span><span class="ansi-blue-fg">(self, values, sample_weight)</span>
-<span class="ansi-green-intense-fg ansi-bold">    375</span>       values <span class="ansi-blue-fg">=</span> math_ops<span class="ansi-blue-fg">.</span>multiply<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">,</span> sample_weight<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    376</span> 
-<span class="ansi-green-fg">--&gt; 377</span><span class="ansi-red-fg">     </span>value_sum <span class="ansi-blue-fg">=</span> math_ops<span class="ansi-blue-fg">.</span>reduce_sum<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    378</span>     <span class="ansi-green-fg">with</span> ops<span class="ansi-blue-fg">.</span>control_dependencies<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>value_sum<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    379</span>       update_total_op <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>total<span class="ansi-blue-fg">.</span>assign_add<span class="ansi-blue-fg">(</span>value_sum<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/util/dispatch.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    199</span>     <span class="ansi-blue-fg">"""Call target, and fall back on dispatchers if there is a TypeError."""</span>
-<span class="ansi-green-intense-fg ansi-bold">    200</span>     <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 201</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">return</span> target<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    202</span>     <span class="ansi-green-fg">except</span> <span class="ansi-blue-fg">(</span>TypeError<span class="ansi-blue-fg">,</span> ValueError<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    203</span>       <span class="ansi-red-fg"># Note: convert_to_eager_tensor currently raises a ValueError, not a</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/math_ops.py</span> in <span class="ansi-cyan-fg">reduce_sum</span><span class="ansi-blue-fg">(input_tensor, axis, keepdims, name)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2042</span> 
-<span class="ansi-green-intense-fg ansi-bold">   2043</span>   return reduce_sum_with_dims(input_tensor, axis, keepdims, name,
-<span class="ansi-green-fg">-&gt; 2044</span><span class="ansi-red-fg">                               _ReductionDims(input_tensor, axis))
-</span><span class="ansi-green-intense-fg ansi-bold">   2045</span> 
-<span class="ansi-green-intense-fg ansi-bold">   2046</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/math_ops.py</span> in <span class="ansi-cyan-fg">_ReductionDims</span><span class="ansi-blue-fg">(x, axis)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1896</span>     x_rank <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
-<span class="ansi-green-intense-fg ansi-bold">   1897</span>     <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> ops<span class="ansi-blue-fg">.</span>Tensor<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">-&gt; 1898</span><span class="ansi-red-fg">       </span>x_rank <span class="ansi-blue-fg">=</span> x<span class="ansi-blue-fg">.</span>shape<span class="ansi-blue-fg">.</span>rank
-<span class="ansi-green-intense-fg ansi-bold">   1899</span>     elif (isinstance(x, sparse_tensor.SparseTensor) and
-<span class="ansi-green-intense-fg ansi-bold">   1900</span>           x.dense_shape.shape.is_fully_defined()):
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">shape</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1173</span>         <span class="ansi-red-fg"># `_tensor_shape` is declared and defined in the definition of</span>
-<span class="ansi-green-intense-fg ansi-bold">   1174</span>         <span class="ansi-red-fg"># `EagerTensor`, in C.</span>
-<span class="ansi-green-fg">-&gt; 1175</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_tensor_shape <span class="ansi-blue-fg">=</span> tensor_shape<span class="ansi-blue-fg">.</span>TensorShape<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_shape_tuple<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1176</span>       <span class="ansi-green-fg">except</span> core<span class="ansi-blue-fg">.</span>_NotOkStatusException <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   1177</span>         six<span class="ansi-blue-fg">.</span>raise_from<span class="ansi-blue-fg">(</span>core<span class="ansi-blue-fg">.</span>_status_to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">.</span>code<span class="ansi-blue-fg">,</span> e<span class="ansi-blue-fg">.</span>message<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">ResourceExhaustedError</span>: 9 root error(s) found.
-  (0) Resource exhausted: {{function_node __inference_distributed_train_step_451493}} Compilation failure: Ran out of memory in memory space hbm. Used 9.96G of 7.48G hbm. Exceeded hbm capacity by 2.48G.
-
-Total hbm usage &gt;= 10.48G:
-    reserved        530.00M 
-    program           9.96G 
-    arguments       unknown size 
-
-Output size unknown.
-
-Program hbm requirement 9.96G:
-    global           100.0K
-    scoped          129.00M
-    HLO temp          9.83G (88.4% utilization: Unpadded (8.34G) Padded (9.43G), 4.1% fragmentation (411.88M))
-
-  Largest program allocations in hbm:
-
-  1. Size: 196.00M
-     Operator: op_type="Conv2D" op_name="StatefulPartitionedCall/flower__classifier/resnet152v2/conv2_block1_3_conv/Conv2D"
-     Shape: f32[64,56,56,256]{3,0,2,1:T(8,128)}
-     Unpadded size: 196.00M
-     XLA label: %fusion.27068 = (f32[256]{0:T(256)}, f32[256]{0:T(256)}, f32[64,56,56,256]{3,0,2,1:T(8,128)}) fusion(f32[256]{0:T(256)} %get-tuple-element.86584, f32[1,1,64,256]{3,2,1,0:T(8,128)} %get-tuple-element.86585, f32[64]{0:T(256)} %get-tuple-element.86580, f32[64...
-     Allocation type: HLO temp
-     ==========================
-
-  2. Size: 185.64M
-     Shape: bf16[64,109,109,64]{3,0,2,1:T(8,128)(2,1)}
-     Unpadded size: 92.82M
-     Extra memory due to padding: 92.82M (2.0x expansion)
-     XLA label: %fusion.1482.remat_uncompressed.1.remat_uncompressed = bf16[64,109,109,64]{3,0,2,1:T(8,128)(2,1)} copy(bf16[64,109,109,64]{2,3,1,0} %fusion.1482.remat_uncompressed.1.remat_compressed)
-     Allocation type: HLO temp
-     ==========================
-
-  3. Size: 185.64M
-     Operator: op_type="DepthwiseConv2dNative" op_name="StatefulPartitionedCall/flower__classifier/xception/block2_sepconv2/separable_conv2d/depthwise"
-     Shape: bf16[64,109,109,128]{3,0,2,1:T(8,128)(2,1)}
-     Unpadded size: 185.64M
-     XLA label: %fusion.1185 = bf16[64,109,109,128]{3,0,2,1:T(8,128)(2,1)} fusion(f32[128]{0:T(256)} %get-tuple-element.86407, f32[128]{0:T(256)} %rsqrt.1200, f32[128]{0:T(256)} %get-tuple-element.86406, f32[64,109,109,128]{3,0,2,1:T(8,128)} %fusion.31072.remat, f32[128]{...
-     Allocation type: HLO temp
-     ==========================
-
-  4. Size: 147.00M
-     Operator: op_type="Conv2D" op_name="StatefulPartitionedCall/flower__classifier/xception/block4_sepconv2/separable_conv2d"
-     Shape: f32[64,28,28,728]{3,0,2,1:T(8,128)}
-     Unpadded size: 139.34M
-     Extra memory due to padding: 7.66M (1.1x expansion)
-     XLA label: %fusion.1504.remat5 = f32[64,28,28,728]{3,0,2,1:T(8,128)} fusion(f32[728]{0:T(1024)} %rsqrt.1207, f32[728]{0:T(1024)} %get-tuple-element.86457, f32[728]{0:T(1024)} %get-tuple-element.86456, f32[728]{0:T(1024)} %get-tuple-element.80700, bf16[64,28,28,728]{3...
-     Allocation type: HLO temp
-     ==========================
-
-  5. Size: 109.00M
-     Shape: f32[64,109,109,32]{2,3,1,0}
-     Unpadded size: 92.82M
-     Extra memory due to padding: 16.18M (1.2x expansion)
-     XLA label: %fusion.1532.remat_compressed = f32[64,109,109,32]{2,3,1,0} copy(f32[64,109,109,32]{0,3,2,1:T(8,128)} %get-tu ... [truncated]</pre>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>10/10 [===============] - 315s 394ms/step - train_loss: 39.9544 - train_acc: 0.0141
+</pre>
 </div>
 </div>
 
