@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      13 min read
+      14 min read
     
 </span></p>
 
@@ -1568,7 +1568,7 @@ Number of test set:  7382
                     <span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">)))</span>
 
 <span class="n">valid_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">distribute_datasets_from_function</span><span class="p">(</span>
-        <span class="n">dataset_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="n">get_valid_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">)</span>
+        <span class="n">dataset_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="n">get_valid_dataset</span><span class="p">(</span><span class="n">valid_filenames</span><span class="p">)</span>
                     <span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">10</span><span class="o">*</span><span class="n">strategy</span><span class="o">.</span><span class="n">num_replicas_in_sync</span><span class="p">)))</span>
 
 <span class="n">metrics_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train_loss'</span><span class="p">,</span><span class="s1">'train_acc'</span><span class="p">,</span><span class="s1">'valid_loss'</span><span class="p">,</span><span class="s1">'valid_acc'</span><span class="p">]</span> 
@@ -1699,7 +1699,7 @@ Number of test set:  7382
 <span class="p">}</span>
 
 <span class="n">valid_dist_ds</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">distribute_datasets_from_function</span><span class="p">(</span>
-        <span class="n">dataset_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="n">get_valid_dataset</span><span class="p">(</span><span class="n">train_filenames</span><span class="p">)))</span>
+        <span class="n">dataset_fn</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="n">get_valid_dataset</span><span class="p">(</span><span class="n">valid_filenames</span><span class="p">)))</span>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
     
@@ -1749,7 +1749,10 @@ Number of test set:  7382
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>258/258 [===============] - 107s 404ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0210
-224/258 [============&gt;..] - ETA: 14s - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0221</pre>
+258/258 [===============] - 107s 403ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 109s 408ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0216
+258/258 [===============] - 110s 414ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0207
+109/258 [=====&gt;.........] - ETA: 1:05 - train_loss: nan - train_acc: 0.0204</pre>
 </div>
 </div>
 
