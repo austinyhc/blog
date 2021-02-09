@@ -96,7 +96,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      51 min read
+      20 min read
     
 </span></p>
 
@@ -908,7 +908,7 @@ Number of test set:  7382
     <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">labeled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">data_augment</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">2048</span><span class="p">)</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">bs</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1"># prefetch the next batch while training</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">AUTOTUNE</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span>
@@ -1178,7 +1178,6 @@ Number of test set:  7382
                      <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_a</span><span class="o">*</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rising_b</span><span class="p">,</span>
                      <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">decay_fn</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">step</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rising_steps</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    
 </pre></div>
 
     </div>
@@ -1526,19 +1525,8 @@ Number of test set:  7382
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metrics_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train_loss'</span><span class="p">,</span><span class="s1">'train_acc'</span><span class="p">]</span> 
-<span class="n">pbar</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">Progbar</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">stateful_metrics</span><span class="o">=</span><span class="n">metrics_names</span><span class="p">)</span>
-
-<span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-<span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
-<span class="n">train_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dist_ds</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-    <span class="n">train_loss</span> <span class="o">=</span> <span class="n">distributed_train_step</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">train_iter</span><span class="p">))</span>
-    <span class="n">train_loss_obj</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span>
-    <span class="n">values</span><span class="o">=</span><span class="p">[(</span><span class="s1">'train_loss'</span><span class="p">,</span> <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span>
-            <span class="p">(</span><span class="s1">'train_acc'</span><span class="p">,</span> <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())]</span>
-    <span class="n">pbar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">dist_inputs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_dist_ds</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">distributed_train_step</span><span class="p">(</span><span class="n">dist_inputs</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -1551,7 +1539,205 @@ Number of test set:  7382
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>10/10 [===============] - 394s 374ms/step - train_loss: 5.0559 - train_acc: 0.0047
+<pre>0 tf.Tensor(5.026333, shape=(), dtype=float32)
+1 tf.Tensor(4.9403057, shape=(), dtype=float32)
+2 tf.Tensor(5.0045795, shape=(), dtype=float32)
+3 tf.Tensor(4.900854, shape=(), dtype=float32)
+4 tf.Tensor(5.0316763, shape=(), dtype=float32)
+5 tf.Tensor(5.029546, shape=(), dtype=float32)
+6 tf.Tensor(4.9109726, shape=(), dtype=float32)
+7 tf.Tensor(4.967992, shape=(), dtype=float32)
+8 tf.Tensor(4.714362, shape=(), dtype=float32)
+9 tf.Tensor(5.043539, shape=(), dtype=float32)
+10 tf.Tensor(4.741995, shape=(), dtype=float32)
+11 tf.Tensor(4.9312105, shape=(), dtype=float32)
+12 tf.Tensor(5.047738, shape=(), dtype=float32)
+13 tf.Tensor(4.945464, shape=(), dtype=float32)
+14 tf.Tensor(4.7944446, shape=(), dtype=float32)
+15 tf.Tensor(4.9120684, shape=(), dtype=float32)
+16 tf.Tensor(4.815271, shape=(), dtype=float32)
+17 tf.Tensor(4.882629, shape=(), dtype=float32)
+18 tf.Tensor(4.770242, shape=(), dtype=float32)
+19 tf.Tensor(4.5519996, shape=(), dtype=float32)
+20 tf.Tensor(4.5906525, shape=(), dtype=float32)
+21 tf.Tensor(4.598182, shape=(), dtype=float32)
+22 tf.Tensor(4.731615, shape=(), dtype=float32)
+23 tf.Tensor(4.611568, shape=(), dtype=float32)
+24 tf.Tensor(4.524347, shape=(), dtype=float32)
+25 tf.Tensor(4.5374455, shape=(), dtype=float32)
+26 tf.Tensor(4.068186, shape=(), dtype=float32)
+27 tf.Tensor(4.411514, shape=(), dtype=float32)
+28 tf.Tensor(4.442523, shape=(), dtype=float32)
+29 tf.Tensor(4.143365, shape=(), dtype=float32)
+30 tf.Tensor(4.112925, shape=(), dtype=float32)
+31 tf.Tensor(4.210536, shape=(), dtype=float32)
+32 tf.Tensor(4.082328, shape=(), dtype=float32)
+33 tf.Tensor(4.267316, shape=(), dtype=float32)
+34 tf.Tensor(3.7458098, shape=(), dtype=float32)
+35 tf.Tensor(3.8070192, shape=(), dtype=float32)
+36 tf.Tensor(3.7275915, shape=(), dtype=float32)
+37 tf.Tensor(3.6895356, shape=(), dtype=float32)
+38 tf.Tensor(3.728816, shape=(), dtype=float32)
+39 tf.Tensor(3.7660315, shape=(), dtype=float32)
+40 tf.Tensor(3.729217, shape=(), dtype=float32)
+41 tf.Tensor(3.818569, shape=(), dtype=float32)
+42 tf.Tensor(3.5128622, shape=(), dtype=float32)
+43 tf.Tensor(3.5605502, shape=(), dtype=float32)
+44 tf.Tensor(3.5027924, shape=(), dtype=float32)
+45 tf.Tensor(3.5389743, shape=(), dtype=float32)
+46 tf.Tensor(3.9679976, shape=(), dtype=float32)
+47 tf.Tensor(3.2507002, shape=(), dtype=float32)
+48 tf.Tensor(3.3008437, shape=(), dtype=float32)
+49 tf.Tensor(3.496479, shape=(), dtype=float32)
+50 tf.Tensor(3.0030692, shape=(), dtype=float32)
+51 tf.Tensor(3.2541633, shape=(), dtype=float32)
+52 tf.Tensor(3.1682162, shape=(), dtype=float32)
+53 tf.Tensor(3.0233228, shape=(), dtype=float32)
+54 tf.Tensor(3.4954524, shape=(), dtype=float32)
+55 tf.Tensor(3.2493548, shape=(), dtype=float32)
+56 tf.Tensor(3.0407085, shape=(), dtype=float32)
+57 tf.Tensor(3.1225076, shape=(), dtype=float32)
+58 tf.Tensor(3.1297023, shape=(), dtype=float32)
+59 tf.Tensor(2.8914614, shape=(), dtype=float32)
+60 tf.Tensor(3.1181335, shape=(), dtype=float32)
+61 tf.Tensor(3.449382, shape=(), dtype=float32)
+62 tf.Tensor(2.8517523, shape=(), dtype=float32)
+63 tf.Tensor(3.439715, shape=(), dtype=float32)
+64 tf.Tensor(3.380942, shape=(), dtype=float32)
+65 tf.Tensor(2.97645, shape=(), dtype=float32)
+66 tf.Tensor(2.8157783, shape=(), dtype=float32)
+67 tf.Tensor(3.161972, shape=(), dtype=float32)
+68 tf.Tensor(2.7561646, shape=(), dtype=float32)
+69 tf.Tensor(2.8971806, shape=(), dtype=float32)
+70 tf.Tensor(2.6066575, shape=(), dtype=float32)
+71 tf.Tensor(2.7052586, shape=(), dtype=float32)
+72 tf.Tensor(2.6497834, shape=(), dtype=float32)
+73 tf.Tensor(2.5957692, shape=(), dtype=float32)
+74 tf.Tensor(2.9287748, shape=(), dtype=float32)
+75 tf.Tensor(2.5184262, shape=(), dtype=float32)
+76 tf.Tensor(2.8838377, shape=(), dtype=float32)
+77 tf.Tensor(2.5462172, shape=(), dtype=float32)
+78 tf.Tensor(2.3953714, shape=(), dtype=float32)
+79 tf.Tensor(2.4752226, shape=(), dtype=float32)
+80 tf.Tensor(2.6956077, shape=(), dtype=float32)
+81 tf.Tensor(2.7440298, shape=(), dtype=float32)
+82 tf.Tensor(2.5555322, shape=(), dtype=float32)
+83 tf.Tensor(2.5182564, shape=(), dtype=float32)
+84 tf.Tensor(2.7106948, shape=(), dtype=float32)
+85 tf.Tensor(2.8577, shape=(), dtype=float32)
+86 tf.Tensor(2.296898, shape=(), dtype=float32)
+87 tf.Tensor(2.5259738, shape=(), dtype=float32)
+88 tf.Tensor(2.8221638, shape=(), dtype=float32)
+89 tf.Tensor(2.5155413, shape=(), dtype=float32)
+90 tf.Tensor(2.4308522, shape=(), dtype=float32)
+91 tf.Tensor(2.5193245, shape=(), dtype=float32)
+92 tf.Tensor(2.7228553, shape=(), dtype=float32)
+93 tf.Tensor(2.3048596, shape=(), dtype=float32)
+94 tf.Tensor(2.4349453, shape=(), dtype=float32)
+95 tf.Tensor(2.4690652, shape=(), dtype=float32)
+96 tf.Tensor(2.2111742, shape=(), dtype=float32)
+97 tf.Tensor(2.356836, shape=(), dtype=float32)
+98 tf.Tensor(2.6146839, shape=(), dtype=float32)
+99 tf.Tensor(2.1376548, shape=(), dtype=float32)
+100 tf.Tensor(2.2191825, shape=(), dtype=float32)
+101 tf.Tensor(2.6156907, shape=(), dtype=float32)
+102 tf.Tensor(2.66954, shape=(), dtype=float32)
+103 tf.Tensor(2.7518919, shape=(), dtype=float32)
+104 tf.Tensor(2.3979135, shape=(), dtype=float32)
+105 tf.Tensor(2.484482, shape=(), dtype=float32)
+106 tf.Tensor(2.2231107, shape=(), dtype=float32)
+107 tf.Tensor(2.8106394, shape=(), dtype=float32)
+108 tf.Tensor(2.4689262, shape=(), dtype=float32)
+109 tf.Tensor(2.2588155, shape=(), dtype=float32)
+110 tf.Tensor(2.349732, shape=(), dtype=float32)
+111 tf.Tensor(2.3854601, shape=(), dtype=float32)
+112 tf.Tensor(2.2790928, shape=(), dtype=float32)
+113 tf.Tensor(2.3109431, shape=(), dtype=float32)
+114 tf.Tensor(2.5066214, shape=(), dtype=float32)
+115 tf.Tensor(2.237297, shape=(), dtype=float32)
+116 tf.Tensor(2.2334676, shape=(), dtype=float32)
+117 tf.Tensor(2.0215116, shape=(), dtype=float32)
+118 tf.Tensor(2.426753, shape=(), dtype=float32)
+119 tf.Tensor(2.325304, shape=(), dtype=float32)
+120 tf.Tensor(2.3379703, shape=(), dtype=float32)
+121 tf.Tensor(2.2756116, shape=(), dtype=float32)
+122 tf.Tensor(2.2680352, shape=(), dtype=float32)
+123 tf.Tensor(2.2136068, shape=(), dtype=float32)
+124 tf.Tensor(2.222566, shape=(), dtype=float32)
+125 tf.Tensor(2.2452056, shape=(), dtype=float32)
+126 tf.Tensor(2.336903, shape=(), dtype=float32)
+127 tf.Tensor(2.4844904, shape=(), dtype=float32)
+128 tf.Tensor(2.0869923, shape=(), dtype=float32)
+129 tf.Tensor(2.17862, shape=(), dtype=float32)
+130 tf.Tensor(2.305067, shape=(), dtype=float32)
+131 tf.Tensor(2.5910223, shape=(), dtype=float32)
+132 tf.Tensor(2.4221764, shape=(), dtype=float32)
+133 tf.Tensor(2.384495, shape=(), dtype=float32)
+134 tf.Tensor(2.2773247, shape=(), dtype=float32)
+135 tf.Tensor(2.5179467, shape=(), dtype=float32)
+136 tf.Tensor(2.48707, shape=(), dtype=float32)
+137 tf.Tensor(2.3465428, shape=(), dtype=float32)
+138 tf.Tensor(2.5543747, shape=(), dtype=float32)
+139 tf.Tensor(2.0989184, shape=(), dtype=float32)
+140 tf.Tensor(2.2457938, shape=(), dtype=float32)
+141 tf.Tensor(2.4102347, shape=(), dtype=float32)
+142 tf.Tensor(2.18103, shape=(), dtype=float32)
+143 tf.Tensor(2.298244, shape=(), dtype=float32)
+144 tf.Tensor(2.224056, shape=(), dtype=float32)
+145 tf.Tensor(2.2753525, shape=(), dtype=float32)
+146 tf.Tensor(2.2706804, shape=(), dtype=float32)
+147 tf.Tensor(2.2959151, shape=(), dtype=float32)
+148 tf.Tensor(2.4199169, shape=(), dtype=float32)
+149 tf.Tensor(2.1506, shape=(), dtype=float32)
+150 tf.Tensor(2.2235856, shape=(), dtype=float32)
+151 tf.Tensor(2.255536, shape=(), dtype=float32)
+152 tf.Tensor(2.3225312, shape=(), dtype=float32)
+153 tf.Tensor(2.2670712, shape=(), dtype=float32)
+154 tf.Tensor(2.470027, shape=(), dtype=float32)
+155 tf.Tensor(2.1143265, shape=(), dtype=float32)
+156 tf.Tensor(2.4435296, shape=(), dtype=float32)
+157 tf.Tensor(2.267485, shape=(), dtype=float32)
+158 tf.Tensor(2.162984, shape=(), dtype=float32)
+159 tf.Tensor(2.131945, shape=(), dtype=float32)
+160 tf.Tensor(2.347246, shape=(), dtype=float32)
+161 tf.Tensor(2.3329203, shape=(), dtype=float32)
+162 tf.Tensor(2.2154863, shape=(), dtype=float32)
+163 tf.Tensor(1.9504076, shape=(), dtype=float32)
+164 tf.Tensor(2.2996125, shape=(), dtype=float32)
+165 tf.Tensor(2.5972118, shape=(), dtype=float32)
+166 tf.Tensor(2.6052508, shape=(), dtype=float32)
+167 tf.Tensor(2.1293466, shape=(), dtype=float32)
+168 tf.Tensor(2.1296682, shape=(), dtype=float32)
+169 tf.Tensor(2.4781933, shape=(), dtype=float32)
+170 tf.Tensor(1.9668438, shape=(), dtype=float32)
+171 tf.Tensor(2.1713583, shape=(), dtype=float32)
+172 tf.Tensor(2.2547855, shape=(), dtype=float32)
+173 tf.Tensor(2.3878393, shape=(), dtype=float32)
+174 tf.Tensor(2.2468712, shape=(), dtype=float32)
+175 tf.Tensor(2.2493691, shape=(), dtype=float32)
+176 tf.Tensor(2.2914815, shape=(), dtype=float32)
+177 tf.Tensor(2.0175693, shape=(), dtype=float32)
+178 tf.Tensor(2.0850856, shape=(), dtype=float32)
+179 tf.Tensor(2.1030715, shape=(), dtype=float32)
+180 tf.Tensor(2.098067, shape=(), dtype=float32)
+181 tf.Tensor(2.366736, shape=(), dtype=float32)
+182 tf.Tensor(2.4369457, shape=(), dtype=float32)
+183 tf.Tensor(2.2404463, shape=(), dtype=float32)
+184 tf.Tensor(2.2863317, shape=(), dtype=float32)
+185 tf.Tensor(2.1789486, shape=(), dtype=float32)
+186 tf.Tensor(2.1251602, shape=(), dtype=float32)
+187 tf.Tensor(2.3852215, shape=(), dtype=float32)
+188 tf.Tensor(2.4932334, shape=(), dtype=float32)
+189 tf.Tensor(2.2868311, shape=(), dtype=float32)
+190 tf.Tensor(2.2561576, shape=(), dtype=float32)
+191 tf.Tensor(2.2427166, shape=(), dtype=float32)
+192 tf.Tensor(2.2867038, shape=(), dtype=float32)
+193 tf.Tensor(1.8947014, shape=(), dtype=float32)
+194 tf.Tensor(2.4368358, shape=(), dtype=float32)
+195 tf.Tensor(2.2995994, shape=(), dtype=float32)
+196 tf.Tensor(2.341947, shape=(), dtype=float32)
+197 tf.Tensor(2.059227, shape=(), dtype=float32)
+198 tf.Tensor(2.2721314, shape=(), dtype=float32)
 </pre>
 </div>
 </div>
@@ -1569,2648 +1755,19 @@ Number of test set:  7382
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">train_iter</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">prob_dists</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">TypeError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-59-a822b55540da&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>prob_dists <span class="ansi-blue-fg">=</span> model<span class="ansi-blue-fg">(</span>images<span class="ansi-blue-fg">,</span> training<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/engine/base_layer.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1010</span>         with autocast_variable.enable_auto_cast_variables(
-<span class="ansi-green-intense-fg ansi-bold">   1011</span>             self._compute_dtype_object):
-<span class="ansi-green-fg">-&gt; 1012</span><span class="ansi-red-fg">           </span>outputs <span class="ansi-blue-fg">=</span> call_fn<span class="ansi-blue-fg">(</span>inputs<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1013</span> 
-<span class="ansi-green-intense-fg ansi-bold">   1014</span>         <span class="ansi-green-fg">if</span> self<span class="ansi-blue-fg">.</span>_activity_regularizer<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">&lt;ipython-input-29-86f2a3ce285c&gt;</span> in <span class="ansi-cyan-fg">call</span><span class="ansi-blue-fg">(self, inputs, training)</span>
-<span class="ansi-green-intense-fg ansi-bold">     40</span>         all_model_outputs<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">     41</span>         <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>len<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>image_embedding_layers<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 42</span><span class="ansi-red-fg">             </span>embedding <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>image_embedding_layers<span class="ansi-blue-fg">[</span>i<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">(</span>inputs<span class="ansi-blue-fg">,</span> training<span class="ansi-blue-fg">=</span>training<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     43</span>             pooling <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>pooling_layer<span class="ansi-blue-fg">(</span>embedding<span class="ansi-blue-fg">,</span> training<span class="ansi-blue-fg">=</span>training<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     44</span>             pooling_normalized <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>layer_normalization_layers<span class="ansi-blue-fg">[</span>i<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">(</span>pooling<span class="ansi-blue-fg">,</span> training<span class="ansi-blue-fg">=</span>training<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/engine/base_layer.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    996</span>         inputs <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>_maybe_cast_inputs<span class="ansi-blue-fg">(</span>inputs<span class="ansi-blue-fg">,</span> input_list<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    997</span> 
-<span class="ansi-green-fg">--&gt; 998</span><span class="ansi-red-fg">       </span>input_spec<span class="ansi-blue-fg">.</span>assert_input_compatibility<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>input_spec<span class="ansi-blue-fg">,</span> inputs<span class="ansi-blue-fg">,</span> self<span class="ansi-blue-fg">.</span>name<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    999</span>       <span class="ansi-green-fg">if</span> eager<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   1000</span>         call_fn <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>call
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/engine/input_spec.py</span> in <span class="ansi-cyan-fg">assert_input_compatibility</span><span class="ansi-blue-fg">(input_spec, inputs, layer_name)</span>
-<span class="ansi-green-intense-fg ansi-bold">    199</span>     <span class="ansi-red-fg"># have a `shape` attribute.</span>
-<span class="ansi-green-intense-fg ansi-bold">    200</span>     <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> hasattr<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">'shape'</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 201</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">raise</span> TypeError<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'Inputs to a layer should be tensors. Got: %s'</span> <span class="ansi-blue-fg">%</span> <span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    202</span> 
-<span class="ansi-green-intense-fg ansi-bold">    203</span>   <span class="ansi-green-fg">if</span> len<span class="ansi-blue-fg">(</span>inputs<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">!=</span> len<span class="ansi-blue-fg">(</span>input_spec<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-red-fg">TypeError</span>: Inputs to a layer should be tensors. Got: PerReplica:{
-  0: tf.Tensor(
-[[[[0.32941177 0.5647059  0.43137255]
-   [0.32156864 0.56078434 0.42745098]
-   [0.3137255  0.5647059  0.41960785]
-   ...
-   [0.34509805 0.53333336 0.4862745 ]
-   [0.3529412  0.53333336 0.49019608]
-   [0.34901962 0.5294118  0.49019608]]
-
-  [[0.31764707 0.5686275  0.43529412]
-   [0.30980393 0.5647059  0.43137255]
-   [0.30588236 0.5647059  0.42352942]
-   ...
-   [0.32156864 0.49411765 0.43529412]
-   [0.32941177 0.49411765 0.4392157 ]
-   [0.33333334 0.49411765 0.4392157 ]]
-
-  [[0.30980393 0.57254905 0.44313726]
-   [0.29803923 0.56078434 0.42352942]
-   [0.2901961  0.5568628  0.4117647 ]
-   ...
-   [0.29803923 0.4509804  0.3764706 ]
-   [0.29411766 0.4392157  0.36862746]
-   [0.3019608  0.43529412 0.36862746]]
-
-  ...
-
-  [[0.04705882 0.0627451  0.05882353]
-   [0.05882353 0.07450981 0.07058824]
-   [0.0627451  0.07843138 0.07450981]
-   ...
-   [0.1882353  0.16862746 0.15686275]
-   [0.2        0.18039216 0.16862746]
-   [0.20784314 0.18431373 0.18431373]]
-
-  [[0.05882353 0.06666667 0.0627451 ]
-   [0.05882353 0.07450981 0.07058824]
-   [0.07058824 0.08627451 0.08235294]
-   ...
-   [0.1882353  0.16862746 0.15686275]
-   [0.20392157 0.18431373 0.17254902]
-   [0.21568628 0.19607843 0.18431373]]
-
-  [[0.05490196 0.05490196 0.05490196]
-   [0.06666667 0.07450981 0.07058824]
-   [0.08627451 0.10980392 0.10196079]
-   ...
-   [0.19607843 0.16470589 0.15686275]
-   [0.20392157 0.18431373 0.17254902]
-   [0.21568628 0.19607843 0.18431373]]]
-
-
- [[[0.47058824 0.53333336 0.2784314 ]
-   [0.52156866 0.5764706  0.33333334]
-   [0.5137255  0.5686275  0.32941177]
-   ...
-   [0.67058825 0.59607846 0.5411765 ]
-   [0.5921569  0.5176471  0.45882353]
-   [0.57254905 0.49803922 0.4392157 ]]
-
-  [[0.50980395 0.5529412  0.31764707]
-   [0.4745098  0.5176471  0.2901961 ]
-   [0.39215687 0.43137255 0.22352941]
-   ...
-   [0.6509804  0.5764706  0.5176471 ]
-   [0.58431375 0.50980395 0.4509804 ]
-   [0.5647059  0.49019608 0.43137255]]
-
-  [[0.4        0.43137255 0.19607843]
-   [0.22352941 0.25882354 0.03529412]
-   [0.16078432 0.19607843 0.        ]
-   ...
-   [0.58431375 0.50980395 0.4509804 ]
-   [0.5568628  0.48235294 0.42352942]
-   [0.57254905 0.49803922 0.4392157 ]]
-
-  ...
-
-  [[0.15294118 0.11372549 0.07450981]
-   [0.07450981 0.03529412 0.        ]
-   [0.06666667 0.02745098 0.        ]
-   ...
-   [0.23529412 0.18039216 0.13725491]
-   [0.25882354 0.20392157 0.16862746]
-   [0.07843138 0.01176471 0.        ]]
-
-  [[0.08627451 0.03921569 0.        ]
-   [0.18039216 0.12941177 0.09411765]
-   [0.09019608 0.03921569 0.00392157]
-   ...
-   [0.21568628 0.16078432 0.10980392]
-   [0.20392157 0.14901961 0.11372549]
-   [0.18039216 0.12156863 0.09411765]]
-
-  [[0.1254902  0.07843138 0.02352941]
-   [0.41568628 0.36078432 0.30980393]
-   [0.08627451 0.03137255 0.        ]
-   ...
-   [0.15686275 0.10980392 0.05490196]
-   [0.10980392 0.05882353 0.02352941]
-   [0.08627451 0.03529412 0.00392157]]]
-
-
- [[[0.25882354 0.34117648 0.03137255]
-   [0.21176471 0.3254902  0.01176471]
-   [0.16470589 0.3137255  0.01176471]
-   ...
-   [0.54901963 0.6039216  0.40392157]
-   [0.5411765  0.6039216  0.42745098]
-   [0.5411765  0.6117647  0.44705883]]
-
-  [[0.23921569 0.32156864 0.02745098]
-   [0.19215687 0.29411766 0.00392157]
-   [0.14901961 0.2901961  0.        ]
-   ...
-   [0.54901963 0.6039216  0.39607844]
-   [0.53333336 0.6039216  0.40784314]
-   [0.5411765  0.6156863  0.43529412]]
-
-  [[0.21568628 0.2901961  0.03137255]
-   [0.1764706  0.27450982 0.00784314]
-   [0.14901961 0.27058825 0.00392157]
-   ...
-   [0.53333336 0.6        0.3882353 ]
-   [0.5294118  0.6039216  0.3882353 ]
-   [0.5411765  0.61960787 0.4117647 ]]
-
-  ...
-
-  [[0.2627451  0.31764707 0.07450981]
-   [0.26666668 0.3372549  0.09411765]
-   [0.23921569 0.32156864 0.09019608]
-   ...
-   [0.16470589 0.40392157 0.        ]
-   [0.15686275 0.39215687 0.        ]
-   [0.1254902  0.36078432 0.        ]]
-
-  [[0.23137255 0.30588236 0.04705882]
-   [0.23529412 0.31764707 0.0627451 ]
-   [0.23529412 0.32941177 0.08627451]
-   ...
-   [0.14117648 0.35686275 0.        ]
-   [0.13725491 0.3529412  0.        ]
-   [0.1254902  0.3372549  0.        ]]
-
-  [[0.21176471 0.29803923 0.01176471]
-   [0.20784314 0.29803923 0.02352941]
-   [0.19607843 0.29411766 0.03529412]
-   ...
-   [0.12156863 0.32941177 0.        ]
-   [0.10980392 0.3137255  0.        ]
-   [0.11764706 0.30980393 0.        ]]]
-
-
- ...
-
-
- [[[1.         1.         1.        ]
-   [1.         1.         0.98039216]
-   [0.99607843 1.         0.98039216]
-   ...
-   [0.9764706  1.         0.94509804]
-   [0.99607843 1.         0.99215686]
-   [1.         1.         1.        ]]
-
-  [[0.99607843 1.         1.        ]
-   [0.99607843 1.         0.98039216]
-   [0.99607843 1.         0.98039216]
-   ...
-   [0.9764706  1.         0.94509804]
-   [0.99607843 1.         0.99215686]
-   [0.99607843 0.99607843 0.99607843]]
-
-  [[0.9882353  1.         1.        ]
-   [0.99607843 1.         0.98039216]
-   [0.99607843 1.         0.98039216]
-   ...
-   [0.9764706  1.         0.94509804]
-   [0.99607843 1.         0.99215686]
-   [1.         1.         1.        ]]
-
-  ...
-
-  [[1.         1.         1.        ]
-   [1.         1.         0.98039216]
-   [0.99607843 1.         0.972549  ]
-   ...
-   [1.         1.         0.9647059 ]
-   [1.         1.         0.9529412 ]
-   [1.         1.         0.99215686]]
-
-  [[1.         1.         1.        ]
-   [1.         1.         0.98039216]
-   [0.99607843 1.         0.972549  ]
-   ...
-   [1.         1.         0.9647059 ]
-   [1.         1.         0.9529412 ]
-   [1.         1.         0.99215686]]
-
-  [[1.         1.         1.        ]
-   [1.         1.         0.98039216]
-   [0.99607843 1.         0.972549  ]
-   ...
-   [1.         1.         0.9647059 ]
-   [1.         1.         0.9529412 ]
-   [1.         1.         0.9843137 ]]]
-
-
- [[[0.40392157 0.08235294 0.09019608]
-   [0.3254902  0.06666667 0.07058824]
-   [0.21960784 0.04705882 0.04313726]
-   ...
-   [0.39607844 0.04705882 0.05490196]
-   [0.3647059  0.04705882 0.04313726]
-   [0.34901962 0.03529412 0.03137255]]
-
-  [[0.2901961  0.05490196 0.05490196]
-   [0.21960784 0.03137255 0.03137255]
-   [0.13333334 0.01568628 0.00784314]
-   ...
-   [0.60784316 0.01176471 0.09411765]
-   [0.5803922  0.01960784 0.09019608]
-   [0.5647059  0.02352941 0.08627451]]
-
-  [[0.13333334 0.01568628 0.01568628]
-   [0.09803922 0.00392157 0.00392157]
-   [0.05098039 0.00784314 0.        ]
-   ...
-   [0.64705884 0.00392157 0.09803922]
-   [0.62352943 0.         0.08627451]
-   [0.60784316 0.         0.07843138]]
-
-  ...
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.07843138 0.21568628 0.05098039]
-   [0.01176471 0.13333334 0.        ]
-   [0.         0.12156863 0.        ]]
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.03529412 0.16078432 0.00784314]
-   [0.         0.10980392 0.        ]
-   [0.00784314 0.12156863 0.        ]]
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.00784314 0.13333334 0.        ]
-   [0.01176471 0.13333334 0.        ]
-   [0.03137255 0.14509805 0.02352941]]]
-
-
- [[[0.22745098 0.50980395 0.17254902]
-   [0.22745098 0.50980395 0.18039216]
-   [0.27450982 0.54509807 0.21960784]
-   ...
-   [0.41960785 0.6509804  0.4627451 ]
-   [0.39607844 0.67058825 0.46666667]
-   [0.34509805 0.64705884 0.44313726]]
-
-  [[0.26666668 0.5568628  0.20784314]
-   [0.27450982 0.5647059  0.22352941]
-   [0.21960784 0.50980395 0.1764706 ]
-   ...
-   [0.5372549  0.654902   0.6627451 ]
-   [0.54901963 0.67058825 0.68235296]
-   [0.5411765  0.6627451  0.6745098 ]]
-
-  [[0.2627451  0.5647059  0.19607843]
-   [0.25882354 0.5568628  0.20392157]
-   [0.25490198 0.5529412  0.20784314]
-   ...
-   [0.5686275  0.57254905 0.74509805]
-   [0.5803922  0.5647059  0.7607843 ]
-   [0.58431375 0.5529412  0.7529412 ]]
-
-  ...
-
-  [[0.23529412 0.27450982 0.12941177]
-   [0.23137255 0.27450982 0.11764706]
-   [0.21960784 0.2509804  0.09803922]
-   ...
-   [0.19607843 0.44705883 0.10588235]
-   [0.1882353  0.44705883 0.09411765]
-   [0.20392157 0.46666667 0.10196079]]
-
-  [[0.13333334 0.14509805 0.02352941]
-   [0.10588235 0.12156863 0.        ]
-   [0.2627451  0.28627452 0.14509805]
-   ...
-   [0.2        0.45882353 0.10588235]
-   [0.1764706  0.4392157  0.07450981]
-   [0.23529412 0.49803922 0.1254902 ]]
-
-  [[0.1254902  0.13725491 0.03137255]
-   [0.20784314 0.20784314 0.09803922]
-   [0.34117648 0.34509805 0.21960784]
-   ...
-   [0.21568628 0.47843137 0.11372549]
-   [0.24313726 0.5058824  0.13333334]
-   [0.22352941 0.4862745  0.10588235]]]], shape=(8, 224, 224, 3), dtype=float32),
-  1: tf.Tensor(
-[[[[0.70980394 0.7647059  0.69803923]
-   [0.7529412  0.79607844 0.7411765 ]
-   [0.7607843  0.78431374 0.7372549 ]
-   ...
-   [0.3254902  0.39607844 0.23137255]
-   [0.30588236 0.33333334 0.27058825]
-   [0.28235295 0.28627452 0.26666668]]
-
-  [[0.7019608  0.7764706  0.65882355]
-   [0.7254902  0.78039217 0.6784314 ]
-   [0.7058824  0.7529412  0.65882355]
-   ...
-   [0.3647059  0.43529412 0.28627452]
-   [0.3019608  0.3372549  0.2627451 ]
-   [0.26666668 0.2784314  0.23529412]]
-
-  [[0.59607846 0.6862745  0.5058824 ]
-   [0.5647059  0.64705884 0.4862745 ]
-   [0.5372549  0.6        0.45490196]
-   ...
-   [0.36078432 0.4392157  0.3019608 ]
-   [0.28627452 0.33333334 0.23921569]
-   [0.2627451  0.30980393 0.22352941]]
-
-  ...
-
-  [[0.45490196 0.5294118  0.3529412 ]
-   [0.5254902  0.5921569  0.41960785]
-   [0.5764706  0.63529414 0.46666667]
-   ...
-   [0.10588235 0.16078432 0.10196079]
-   [0.09803922 0.16078432 0.10980392]
-   [0.10980392 0.17254902 0.12156863]]
-
-  [[0.46666667 0.5411765  0.3647059 ]
-   [0.53333336 0.6        0.42745098]
-   [0.5764706  0.63529414 0.46666667]
-   ...
-   [0.10196079 0.16862746 0.09411765]
-   [0.09803922 0.17254902 0.09803922]
-   [0.09019608 0.16078432 0.09803922]]
-
-  [[0.4745098  0.54901963 0.36862746]
-   [0.53333336 0.6        0.42745098]
-   [0.57254905 0.6313726  0.4627451 ]
-   ...
-   [0.09019608 0.16862746 0.07058824]
-   [0.08235294 0.16862746 0.07843138]
-   [0.09019608 0.1764706  0.09411765]]]
-
-
- [[[0.6509804  0.85490197 0.90588236]
-   [0.67058825 0.8784314  0.9411765 ]
-   [0.6509804  0.8784314  0.92156863]
-   ...
-   [0.6039216  0.57254905 0.43137255]
-   [0.62352943 0.5882353  0.45882353]
-   [0.65882355 0.627451   0.4862745 ]]
-
-  [[0.69411767 0.9019608  0.93333334]
-   [0.654902   0.8666667  0.90588236]
-   [0.6431373  0.8745098  0.8901961 ]
-   ...
-   [0.6117647  0.5803922  0.4392157 ]
-   [0.627451   0.5921569  0.4627451 ]
-   [0.654902   0.61960787 0.49019608]]
-
-  [[0.6509804  0.85882354 0.8745098 ]
-   [0.6745098  0.8901961  0.9019608 ]
-   [0.6431373  0.8784314  0.8784314 ]
-   ...
-   [0.6117647  0.5764706  0.44705883]
-   [0.62352943 0.5882353  0.45882353]
-   [0.654902   0.61960787 0.49019608]]
-
-  ...
-
-  [[0.17254902 0.24313726 0.28235295]
-   [0.16862746 0.24705882 0.28235295]
-   [0.16078432 0.2509804  0.28235295]
-   ...
-   [0.05882353 0.28627452 0.05490196]
-   [0.09803922 0.3372549  0.10196079]
-   [0.07843138 0.32941177 0.09019608]]
-
-  [[0.1764706  0.24313726 0.27450982]
-   [0.15686275 0.22745098 0.26666668]
-   [0.1764706  0.26666668 0.29803923]
-   ...
-   [0.06666667 0.28235295 0.05882353]
-   [0.09803922 0.3372549  0.11372549]
-   [0.07058824 0.3254902  0.11372549]]
-
-  [[0.1764706  0.23137255 0.26666668]
-   [0.1764706  0.23137255 0.27450982]
-   [0.21960784 0.29803923 0.33333334]
-   ...
-   [0.06666667 0.2784314  0.04313726]
-   [0.05490196 0.2901961  0.05490196]
-   [0.04705882 0.29411766 0.07058824]]]
-
-
- [[[0.74509805 0.8392157  0.9882353 ]
-   [0.7411765  0.8352941  0.9843137 ]
-   [0.73333335 0.827451   0.9764706 ]
-   ...
-   [0.9882353  0.99607843 0.9843137 ]
-   [0.9882353  0.9882353  0.98039216]
-   [0.9843137  0.9843137  0.9764706 ]]
-
-  [[0.7490196  0.8509804  0.99607843]
-   [0.74509805 0.84705883 0.99215686]
-   [0.7372549  0.8392157  0.9843137 ]
-   ...
-   [0.9843137  0.99215686 0.9882353 ]
-   [0.9843137  0.99215686 0.9882353 ]
-   [0.98039216 0.9882353  0.9843137 ]]
-
-  [[0.7529412  0.85490197 1.        ]
-   [0.7490196  0.8509804  0.99607843]
-   [0.7411765  0.84313726 0.9882353 ]
-   ...
-   [0.96862745 0.9843137  0.98039216]
-   [0.96862745 0.9843137  0.98039216]
-   [0.972549   0.9882353  0.99215686]]
-
-  ...
-
-  [[0.8509804  0.93333334 1.        ]
-   [0.8392157  0.92941177 1.        ]
-   [0.83137256 0.91764706 1.        ]
-   ...
-   [0.5647059  0.61960787 0.654902  ]
-   [0.56078434 0.61960787 0.64705884]
-   [0.5294118  0.5803922  0.6117647 ]]
-
-  [[0.8666667  0.9411765  1.        ]
-   [0.8509804  0.9372549  0.99215686]
-   [0.8509804  0.9372549  0.99215686]
-   ...
-   [0.5137255  0.5803922  0.6117647 ]
-   [0.5568628  0.62352943 0.654902  ]
-   [0.5411765  0.60784316 0.6392157 ]]
-
-  [[0.85490197 0.93333334 0.9764706 ]
-   [0.8509804  0.92941177 0.972549  ]
-   [0.84705883 0.93333334 0.9843137 ]
-   ...
-   [0.48235294 0.54901963 0.5803922 ]
-   [0.54509807 0.6156863  0.654902  ]
-   [0.50980395 0.5803922  0.61960787]]]
-
-
- ...
-
-
- [[[0.20392157 0.18431373 0.10980392]
-   [0.3254902  0.3019608  0.25490198]
-   [0.5803922  0.5372549  0.52156866]
-   ...
-   [0.34509805 0.54509807 0.08235294]
-   [0.34509805 0.5294118  0.09019608]
-   [0.39607844 0.5647059  0.14117648]]
-
-  [[0.21568628 0.19215687 0.12941177]
-   [0.33333334 0.30588236 0.26666668]
-   [0.54901963 0.50980395 0.5019608 ]
-   ...
-   [0.4117647  0.60784316 0.17254902]
-   [0.3882353  0.5686275  0.18039216]
-   [0.43137255 0.6039216  0.25490198]]
-
-  [[0.23137255 0.21568628 0.16862746]
-   [0.30980393 0.29411766 0.25882354]
-   [0.5294118  0.49803922 0.4862745 ]
-   ...
-   [0.3019608  0.49803922 0.0627451 ]
-   [0.32941177 0.5176471  0.12941177]
-   [0.5019608  0.6784314  0.34509805]]
-
-  ...
-
-  [[0.5254902  0.5686275  0.5137255 ]
-   [0.5411765  0.6039216  0.56078434]
-   [0.54901963 0.6156863  0.5764706 ]
-   ...
-   [0.23529412 0.34901962 0.09803922]
-   [0.7607843  0.8784314  0.627451  ]
-   [0.7372549  0.8627451  0.5647059 ]]
-
-  [[0.5254902  0.627451   0.52156866]
-   [0.5568628  0.6666667  0.5686275 ]
-   [0.5568628  0.64705884 0.5686275 ]
-   ...
-   [0.2627451  0.34901962 0.09411765]
-   [0.4392157  0.54901963 0.31764707]
-   [0.69411767 0.8235294  0.5529412 ]]
-
-  [[0.5294118  0.6901961  0.53333336]
-   [0.5137255  0.67058825 0.5254902 ]
-   [0.5568628  0.69411767 0.5764706 ]
-   ...
-   [0.36862746 0.44705883 0.16470589]
-   [0.38431373 0.4862745  0.23921569]
-   [0.7176471  0.8666667  0.5803922 ]]]
-
-
- [[[0.12156863 0.24313726 0.10980392]
-   [0.21960784 0.3372549  0.19607843]
-   [0.3137255  0.42745098 0.25490198]
-   ...
-   [0.4509804  0.53333336 0.49803922]
-   [0.4392157  0.52156866 0.4862745 ]
-   [0.4        0.48235294 0.44705883]]
-
-  [[0.12941177 0.2509804  0.1254902 ]
-   [0.22352941 0.34117648 0.2       ]
-   [0.32156864 0.43137255 0.27058825]
-   ...
-   [0.42745098 0.5137255  0.4627451 ]
-   [0.40784314 0.49411765 0.44313726]
-   [0.36862746 0.45490196 0.40392157]]
-
-  [[0.13725491 0.2509804  0.12941177]
-   [0.23137255 0.34901962 0.21568628]
-   [0.32941177 0.4392157  0.28235295]
-   ...
-   [0.4        0.49019608 0.4117647 ]
-   [0.38039216 0.47058824 0.39215687]
-   [0.34117648 0.43137255 0.3529412 ]]
-
-  ...
-
-  [[0.25490198 0.38431373 0.16862746]
-   [0.24705882 0.3764706  0.16862746]
-   [0.29411766 0.4117647  0.21568628]
-   ...
-   [0.02352941 0.07058824 0.        ]
-   [0.02745098 0.07450981 0.        ]
-   [0.03529412 0.08235294 0.        ]]
-
-  [[0.28235295 0.4        0.19607843]
-   [0.3019608  0.41960785 0.22352941]
-   [0.2784314  0.3882353  0.2       ]
-   ...
-   [0.03921569 0.08627451 0.        ]
-   [0.04313726 0.09019608 0.        ]
-   [0.05882353 0.10588235 0.01176471]]
-
-  [[0.2901961  0.40392157 0.19215687]
-   [0.27058825 0.38039216 0.18039216]
-   [0.18431373 0.29411766 0.10588235]
-   ...
-   [0.07450981 0.11372549 0.01960784]
-   [0.08235294 0.12156863 0.02745098]
-   [0.10196079 0.14117648 0.04705882]]]
-
-
- [[[0.4862745  0.7137255  0.37254903]
-   [0.4862745  0.7137255  0.37254903]
-   [0.46666667 0.69411767 0.3529412 ]
-   ...
-   [0.46666667 0.70980394 0.3764706 ]
-   [0.46666667 0.70980394 0.3764706 ]
-   [0.47058824 0.7137255  0.38039216]]
-
-  [[0.47058824 0.69803923 0.3647059 ]
-   [0.4862745  0.7137255  0.37254903]
-   [0.47843137 0.7058824  0.3647059 ]
-   ...
-   [0.47843137 0.70980394 0.38039216]
-   [0.4745098  0.7176471  0.38431373]
-   [0.4745098  0.7176471  0.38431373]]
-
-  [[0.4862745  0.7137255  0.38039216]
-   [0.5019608  0.7294118  0.3882353 ]
-   [0.49411765 0.72156864 0.38039216]
-   ...
-   [0.4745098  0.7058824  0.3764706 ]
-   [0.47843137 0.70980394 0.38039216]
-   [0.4627451  0.7058824  0.37254903]]
-
-  ...
-
-  [[0.14901961 0.20392157 0.13725491]
-   [0.13333334 0.19215687 0.11764706]
-   [0.13725491 0.1882353  0.11764706]
-   ...
-   [0.32941177 0.5176471  0.28235295]
-   [0.32156864 0.49411765 0.25490198]
-   [0.23529412 0.3647059  0.14901961]]
-
-  [[0.12156863 0.19215687 0.10588235]
-   [0.09019608 0.16078432 0.07450981]
-   [0.21176471 0.27058825 0.1882353 ]
-   ...
-   [0.29803923 0.49019608 0.27450982]
-   [0.27058825 0.4392157  0.23137255]
-   [0.28235295 0.4        0.20392157]]
-
-  [[0.13725491 0.20784314 0.10588235]
-   [0.05490196 0.1254902  0.02352941]
-   [0.11372549 0.17254902 0.08235294]
-   ...
-   [0.34901962 0.5294118  0.34901962]
-   [0.26666668 0.41960785 0.24705882]
-   [0.22745098 0.33333334 0.16470589]]]], shape=(8, 224, 224, 3), dtype=float32),
-  2: tf.Tensor(
-[[[[0.39215687 0.6        0.3254902 ]
-   [0.41568628 0.63529414 0.2784314 ]
-   [0.36862746 0.6        0.1764706 ]
-   ...
-   [0.32941177 0.58431375 0.18431373]
-   [0.25882354 0.5254902  0.12156863]
-   [0.3137255  0.56078434 0.15294118]]
-
-  [[0.3254902  0.54901963 0.28235295]
-   [0.36078432 0.5882353  0.25882354]
-   [0.34117648 0.57254905 0.20392157]
-   ...
-   [0.24313726 0.5058824  0.09019608]
-   [0.28627452 0.5529412  0.11764706]
-   [0.36862746 0.6156863  0.16862746]]
-
-  [[0.40784314 0.6431373  0.36078432]
-   [0.35686275 0.59607846 0.2901961 ]
-   [0.33333334 0.56078434 0.27058825]
-   ...
-   [0.30588236 0.5647059  0.17254902]
-   [0.30588236 0.5647059  0.14117648]
-   [0.4117647  0.6431373  0.21960784]]
-
-  ...
-
-  [[0.90588236 0.7176471  0.6313726 ]
-   [0.8980392  0.70980394 0.62352943]
-   [0.8901961  0.7019608  0.6156863 ]
-   ...
-   [0.8352941  0.5803922  0.74509805]
-   [0.8666667  0.61960787 0.7411765 ]
-   [0.84705883 0.6156863  0.7019608 ]]
-
-  [[0.9098039  0.70980394 0.627451  ]
-   [0.8980392  0.69803923 0.6156863 ]
-   [0.8901961  0.6901961  0.60784316]
-   ...
-   [0.8745098  0.65882355 0.78039217]
-   [0.9137255  0.7490196  0.7529412 ]
-   [0.81960785 0.68235296 0.59607846]]
-
-  [[0.9098039  0.70980394 0.627451  ]
-   [0.9019608  0.7019608  0.61960787]
-   [0.89411765 0.69411767 0.6117647 ]
-   ...
-   [0.83137256 0.62352943 0.7019608 ]
-   [0.92941177 0.78039217 0.6901961 ]
-   [0.89411765 0.7921569  0.5686275 ]]]
-
-
- [[[0.5803922  0.57254905 0.41960785]
-   [0.58431375 0.5764706  0.42352942]
-   [0.5882353  0.5803922  0.42745098]
-   ...
-   [0.39607844 0.50980395 0.3372549 ]
-   [0.39607844 0.50980395 0.32941177]
-   [0.39607844 0.50980395 0.32941177]]
-
-  [[0.5803922  0.57254905 0.41960785]
-   [0.58431375 0.5764706  0.42352942]
-   [0.5882353  0.5803922  0.42745098]
-   ...
-   [0.4        0.5137255  0.34117648]
-   [0.4        0.5137255  0.33333334]
-   [0.4        0.5137255  0.33333334]]
-
-  [[0.5882353  0.5803922  0.42745098]
-   [0.5882353  0.5803922  0.42745098]
-   [0.5882353  0.5803922  0.42745098]
-   ...
-   [0.4117647  0.5254902  0.3529412 ]
-   [0.40784314 0.52156866 0.34117648]
-   [0.40784314 0.52156866 0.34117648]]
-
-  ...
-
-  [[0.49019608 0.49019608 0.29411766]
-   [0.4862745  0.4862745  0.2901961 ]
-   [0.47843137 0.47843137 0.28235295]
-   ...
-   [0.74509805 0.70980394 0.5411765 ]
-   [0.74509805 0.7137255  0.53333336]
-   [0.7490196  0.7176471  0.5372549 ]]
-
-  [[0.49411765 0.4862745  0.29411766]
-   [0.4862745  0.47843137 0.28627452]
-   [0.48235294 0.4745098  0.28235295]
-   ...
-   [0.75686276 0.72156864 0.5529412 ]
-   [0.75686276 0.7254902  0.54509807]
-   [0.75686276 0.7254902  0.54509807]]
-
-  [[0.49019608 0.48235294 0.2901961 ]
-   [0.4862745  0.47843137 0.28627452]
-   [0.48235294 0.4745098  0.28235295]
-   ...
-   [0.76862746 0.73333335 0.5647059 ]
-   [0.7607843  0.73333335 0.5529412 ]
-   [0.75686276 0.7294118  0.54901963]]]
-
-
- [[[0.41960785 0.42352942 0.3529412 ]
-   [0.42352942 0.43529412 0.36078432]
-   [0.42352942 0.43529412 0.36862746]
-   ...
-   [0.3882353  0.36078432 0.32156864]
-   [0.3137255  0.32156864 0.23921569]
-   [0.26666668 0.2901961  0.14901961]]
-
-  [[0.42352942 0.43529412 0.3529412 ]
-   [0.42745098 0.4392157  0.3647059 ]
-   [0.42745098 0.4392157  0.37254903]
-   ...
-   [0.4392157  0.4117647  0.38039216]
-   [0.34901962 0.35686275 0.27450982]
-   [0.3019608  0.3254902  0.19215687]]
-
-  [[0.43137255 0.44313726 0.36078432]
-   [0.43137255 0.44313726 0.36078432]
-   [0.43137255 0.44313726 0.36862746]
-   ...
-   [0.4862745  0.45882353 0.43529412]
-   [0.3882353  0.39215687 0.32156864]
-   [0.33333334 0.3529412  0.22745098]]
-
-  ...
-
-  [[0.84313726 0.8392157  0.9098039 ]
-   [0.83137256 0.84313726 0.9098039 ]
-   [0.80784315 0.8352941  0.90588236]
-   ...
-   [0.10980392 0.13725491 0.06666667]
-   [0.10980392 0.14117648 0.05882353]
-   [0.10588235 0.13725491 0.04705882]]
-
-  [[0.8352941  0.8392157  0.9098039 ]
-   [0.8117647  0.8352941  0.8980392 ]
-   [0.78039217 0.827451   0.8901961 ]
-   ...
-   [0.08627451 0.10980392 0.05490196]
-   [0.09019608 0.11764706 0.05490196]
-   [0.09019608 0.12156863 0.03921569]]
-
-  [[0.8352941  0.8392157  0.9098039 ]
-   [0.8        0.827451   0.8901961 ]
-   [0.7607843  0.80784315 0.87058824]
-   ...
-   [0.07058824 0.10196079 0.05098039]
-   [0.0627451  0.09411765 0.03529412]
-   [0.05882353 0.09411765 0.02745098]]]
-
-
- ...
-
-
- [[[0.5882353  0.3019608  0.        ]
-   [0.5882353  0.3019608  0.        ]
-   [0.5882353  0.3019608  0.        ]
-   ...
-   [0.37254903 0.09019608 0.        ]
-   [0.37254903 0.09019608 0.        ]
-   [0.37254903 0.09019608 0.        ]]
-
-  [[0.5882353  0.3019608  0.        ]
-   [0.5882353  0.3019608  0.        ]
-   [0.5882353  0.3019608  0.        ]
-   ...
-   [0.37254903 0.09019608 0.        ]
-   [0.37254903 0.09019608 0.        ]
-   [0.37254903 0.09019608 0.        ]]
-
-  [[0.5921569  0.29411766 0.        ]
-   [0.59607846 0.29803923 0.        ]
-   [0.59607846 0.29803923 0.        ]
-   ...
-   [0.38431373 0.09411765 0.        ]
-   [0.37254903 0.09019608 0.        ]
-   [0.3764706  0.09411765 0.        ]]
-
-  ...
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]]
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]]
-
-  [[0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   ...
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]
-   [0.         0.         0.        ]]]
-
-
- [[[0.13333334 0.11764706 0.08235294]
-   [0.14509805 0.12941177 0.09411765]
-   [0.15686275 0.14117648 0.10588235]
-   ...
-   [0.12156863 0.27450982 0.01960784]
-   [0.16862746 0.3254902  0.04705882]
-   [0.22352941 0.38431373 0.07843138]]
-
-  [[0.13333334 0.11764706 0.08235294]
-   [0.14509805 0.12941177 0.09411765]
-   [0.14901961 0.13333334 0.09803922]
-   ...
-   [0.10588235 0.2627451  0.01568628]
-   [0.14509805 0.3019608  0.02745098]
-   [0.20392157 0.3647059  0.06666667]]
-
-  [[0.13725491 0.12156863 0.08627451]
-   [0.14901961 0.13333334 0.09803922]
-   [0.14509805 0.12941177 0.09411765]
-   ...
-   [0.10196079 0.25882354 0.01176471]
-   [0.13333334 0.29411766 0.01960784]
-   [0.19215687 0.35686275 0.06666667]]
-
-  ...
-
-  [[0.23529412 0.1882353  0.09411765]
-   [0.24313726 0.19607843 0.10196079]
-   [0.2509804  0.21176471 0.11372549]
-   ...
-   [0.14509805 0.28235295 0.07058824]
-   [0.12941177 0.28235295 0.05882353]
-   [0.12156863 0.27450982 0.05098039]]
-
-  [[0.21176471 0.19215687 0.07843138]
-   [0.21960784 0.2        0.08627451]
-   [0.22745098 0.21176471 0.09803922]
-   ...
-   [0.12941177 0.24705882 0.05098039]
-   [0.12156863 0.24705882 0.05098039]
-   [0.10980392 0.23921569 0.03137255]]
-
-  [[0.1764706  0.2        0.06666667]
-   [0.18431373 0.20784314 0.07450981]
-   [0.19215687 0.21960784 0.08627451]
-   ...
-   [0.12941177 0.23137255 0.04705882]
-   [0.12156863 0.23137255 0.03921569]
-   [0.10588235 0.22352941 0.02745098]]]
-
-
- [[[0.21960784 0.3019608  0.13333334]
-   [0.22745098 0.29803923 0.13333334]
-   [0.22352941 0.29411766 0.13725491]
-   ...
-   [0.1254902  0.18039216 0.12156863]
-   [0.11372549 0.16470589 0.1254902 ]
-   [0.11372549 0.16470589 0.12941177]]
-
-  [[0.20392157 0.28627452 0.11764706]
-   [0.2        0.28235295 0.11372549]
-   [0.20784314 0.2784314  0.12156863]
-   ...
-   [0.12941177 0.18431373 0.11764706]
-   [0.12941177 0.18431373 0.1254902 ]
-   [0.09803922 0.16078432 0.10980392]]
-
-  [[0.1882353  0.27058825 0.10196079]
-   [0.18431373 0.26666668 0.09803922]
-   [0.18039216 0.2627451  0.10196079]
-   ...
-   [0.11372549 0.17254902 0.09019608]
-   [0.11764706 0.1764706  0.09411765]
-   [0.10980392 0.1764706  0.10196079]]
-
-  ...
-
-  [[0.60784316 0.42745098 0.19607843]
-   [0.6039216  0.41960785 0.2       ]
-   [0.6117647  0.43529412 0.21960784]
-   ...
-   [0.07450981 0.13333334 0.00392157]
-   [0.06666667 0.12156863 0.        ]
-   [0.27058825 0.3254902  0.11764706]]
-
-  [[0.6156863  0.44705883 0.23137255]
-   [0.6039216  0.43529412 0.22745098]
-   [0.5921569  0.42745098 0.23137255]
-   ...
-   [0.07843138 0.13333334 0.00392157]
-   [0.06666667 0.12156863 0.        ]
-   [0.22352941 0.2784314  0.08627451]]
-
-  [[0.57254905 0.43529412 0.21568628]
-   [0.6        0.44313726 0.24313726]
-   [0.6117647  0.4509804  0.27058825]
-   ...
-   [0.07450981 0.1254902  0.00784314]
-   [0.0627451  0.11764706 0.        ]
-   [0.18039216 0.23137255 0.05098039]]]], shape=(8, 224, 224, 3), dtype=float32),
-  3: tf.Tensor(
-[[[[0.28627452 0.35686275 0.25490198]
-   [0.27450982 0.3647059  0.2509804 ]
-   [0.30588236 0.40784314 0.29411766]
-   ...
-   [0.08235294 0.23529412 0.23137255]
-   [0.10196079 0.23529412 0.23137255]
-   [0.11372549 0.23137255 0.23137255]]
-
-  [[0.26666668 0.34509805 0.23921569]
-   [0.2509804  0.34117648 0.23137255]
-   [0.2784314  0.3764706  0.2627451 ]
-   ...
-   [0.10980392 0.2627451  0.25882354]
-   [0.10196079 0.22745098 0.22352941]
-   [0.09019608 0.2        0.20392157]]
-
-  [[0.22745098 0.30588236 0.20784314]
-   [0.2        0.27450982 0.1882353 ]
-   [0.21960784 0.3137255  0.21960784]
-   ...
-   [0.20784314 0.34901962 0.34117648]
-   [0.13333334 0.2509804  0.2509804 ]
-   [0.07450981 0.1764706  0.17254902]]
-
-  ...
-
-  [[0.78039217 0.54509807 0.6862745 ]
-   [0.6901961  0.49411765 0.60784316]
-   [0.49803922 0.34509805 0.41960785]
-   ...
-   [0.6156863  0.65882355 0.49411765]
-   [0.58431375 0.6        0.45490196]
-   [0.5372549  0.5372549  0.40392157]]
-
-  [[0.76862746 0.53333336 0.6666667 ]
-   [0.6784314  0.48235294 0.5882353 ]
-   [0.47843137 0.3254902  0.4       ]
-   ...
-   [0.49019608 0.5411765  0.37254903]
-   [0.46666667 0.49019608 0.34117648]
-   [0.44313726 0.44705883 0.3137255 ]]
-
-  [[0.7490196  0.5137255  0.64705884]
-   [0.6627451  0.46666667 0.57254905]
-   [0.4745098  0.32156864 0.39607844]
-   ...
-   [0.4117647  0.4627451  0.29411766]
-   [0.39215687 0.42352942 0.27058825]
-   [0.3882353  0.39215687 0.25882354]]]
-
-
- [[[0.43529412 0.5803922  0.3764706 ]
-   [0.3254902  0.47843137 0.22352941]
-   [0.2        0.36862746 0.05882353]
-   ...
-   [0.54901963 0.6666667  0.5568628 ]
-   [0.5254902  0.6509804  0.5568628 ]
-   [0.2901961  0.42352942 0.32941177]]
-
-  [[0.29411766 0.43529412 0.2627451 ]
-   [0.34901962 0.49803922 0.26666668]
-   [0.29803923 0.4627451  0.16470589]
-   ...
-   [0.4509804  0.5686275  0.45882353]
-   [0.27450982 0.39215687 0.2901961 ]
-   [0.17254902 0.2901961  0.19607843]]
-
-  [[0.41960785 0.5372549  0.42745098]
-   [0.37254903 0.5137255  0.3254902 ]
-   [0.33333334 0.4862745  0.22352941]
-   ...
-   [0.28235295 0.40392157 0.28235295]
-   [0.29411766 0.40784314 0.2901961 ]
-   [0.21568628 0.32941177 0.21960784]]
-
-  ...
-
-  [[0.2509804  0.4392157  0.21176471]
-   [0.2901961  0.47843137 0.24313726]
-   [0.3137255  0.5019608  0.25882354]
-   ...
-   [0.6666667  0.81960785 0.64705884]
-   [0.67058825 0.81960785 0.6666667 ]
-   [0.654902   0.8        0.6666667 ]]
-
-  [[0.24313726 0.42745098 0.21176471]
-   [0.27450982 0.4627451  0.23529412]
-   [0.30588236 0.49411765 0.25882354]
-   ...
-   [0.30980393 0.45882353 0.26666668]
-   [0.45882353 0.6039216  0.43137255]
-   [0.63529414 0.7764706  0.627451  ]]
-
-  [[0.23921569 0.42352942 0.21176471]
-   [0.2627451  0.44705883 0.23137255]
-   [0.29803923 0.4862745  0.25882354]
-   ...
-   [0.21568628 0.36862746 0.16078432]
-   [0.21568628 0.3647059  0.18039216]
-   [0.18431373 0.32941177 0.16862746]]]
-
-
- [[[0.6784314  0.3372549  0.29803923]
-   [0.65882355 0.32941177 0.28627452]
-   [0.6313726  0.32156864 0.2627451 ]
-   ...
-   [0.10196079 0.21960784 0.00784314]
-   [0.08627451 0.22352941 0.01176471]
-   [0.08235294 0.22745098 0.02352941]]
-
-  [[0.6039216  0.34509805 0.25882354]
-   [0.5882353  0.32941177 0.24313726]
-   [0.5686275  0.31764707 0.21960784]
-   ...
-   [0.11372549 0.23529412 0.01176471]
-   [0.10196079 0.23921569 0.01960784]
-   [0.10196079 0.24705882 0.03529412]]
-
-  [[0.49803922 0.34117648 0.2       ]
-   [0.48235294 0.32941177 0.1764706 ]
-   [0.45882353 0.3137255  0.14901961]
-   ...
-   [0.14117648 0.2627451  0.03137255]
-   [0.12941177 0.26666668 0.03921569]
-   [0.12941177 0.2784314  0.05490196]]
-
-  ...
-
-  [[0.18431373 0.12156863 0.0627451 ]
-   [0.1882353  0.13725491 0.07450981]
-   [0.1882353  0.14509805 0.06666667]
-   ...
-   [0.30588236 0.20392157 0.15294118]
-   [0.30980393 0.20784314 0.15686275]
-   [0.29803923 0.19607843 0.14509805]]
-
-  [[0.18431373 0.12156863 0.0627451 ]
-   [0.1882353  0.13725491 0.07450981]
-   [0.18431373 0.14117648 0.07058824]
-   ...
-   [0.2784314  0.1764706  0.1254902 ]
-   [0.28235295 0.18039216 0.12941177]
-   [0.28235295 0.18039216 0.12941177]]
-
-  [[0.17254902 0.12156863 0.05882353]
-   [0.18431373 0.13333334 0.07058824]
-   [0.18431373 0.14117648 0.07058824]
-   ...
-   [0.24313726 0.15294118 0.09803922]
-   [0.24313726 0.15294118 0.09803922]
-   [0.24705882 0.15686275 0.10196079]]]
-
-
- ...
-
-
- [[[0.4509804  0.49803922 0.25490198]
-   [0.39607844 0.4627451  0.18431373]
-   [0.34509805 0.42745098 0.1254902 ]
-   ...
-   [0.12941177 0.17254902 0.00392157]
-   [0.36862746 0.39607844 0.23529412]
-   [0.39607844 0.38431373 0.24705882]]
-
-  [[0.4627451  0.50980395 0.25882354]
-   [0.4392157  0.49803922 0.22745098]
-   [0.42352942 0.49019608 0.21176471]
-   ...
-   [0.28235295 0.30588236 0.16470589]
-   [0.3137255  0.3137255  0.20392157]
-   [0.41568628 0.40392157 0.28235295]]
-
-  [[0.46666667 0.50980395 0.24313726]
-   [0.47843137 0.5254902  0.26666668]
-   [0.4117647  0.47058824 0.21568628]
-   ...
-   [0.4117647  0.4117647  0.2784314 ]
-   [0.34901962 0.3372549  0.2627451 ]
-   [0.4627451  0.4392157  0.3372549 ]]
-
-  ...
-
-  [[0.2901961  0.41568628 0.09019608]
-   [0.2784314  0.40784314 0.06666667]
-   [0.31764707 0.44705883 0.10588235]
-   ...
-   [0.32941177 0.3882353  0.16470589]
-   [0.30588236 0.3647059  0.13333334]
-   [0.23921569 0.3137255  0.05490196]]
-
-  [[0.2627451  0.39607844 0.05882353]
-   [0.28235295 0.41568628 0.07450981]
-   [0.3764706  0.5137255  0.16078432]
-   ...
-   [0.2509804  0.32156864 0.09411765]
-   [0.27058825 0.32941177 0.09803922]
-   [0.2        0.2627451  0.00784314]]
-
-  [[0.20784314 0.3529412  0.        ]
-   [0.27058825 0.40784314 0.07843138]
-   [0.42352942 0.56078434 0.23137255]
-   ...
-   [0.23921569 0.29803923 0.08235294]
-   [0.28235295 0.33333334 0.11372549]
-   [0.2901961  0.34117648 0.12156863]]]
-
-
- [[[0.20392157 0.3764706  0.1764706 ]
-   [0.23137255 0.41568628 0.2       ]
-   [0.22745098 0.42352942 0.18431373]
-   ...
-   [0.04313726 0.14117648 0.05490196]
-   [0.04313726 0.14509805 0.04705882]
-   [0.04313726 0.14509805 0.04705882]]
-
-  [[0.23921569 0.41568628 0.19215687]
-   [0.24313726 0.43137255 0.19607843]
-   [0.23137255 0.44705883 0.18431373]
-   ...
-   [0.04705882 0.14901961 0.05098039]
-   [0.05098039 0.15294118 0.05490196]
-   [0.05098039 0.15294118 0.05490196]]
-
-  [[0.2509804  0.44313726 0.1882353 ]
-   [0.25490198 0.45490196 0.18431373]
-   [0.24705882 0.46666667 0.18039216]
-   ...
-   [0.04313726 0.15294118 0.05490196]
-   [0.04705882 0.15686275 0.05882353]
-   [0.04705882 0.16078432 0.05098039]]
-
-  ...
-
-  [[0.48235294 0.62352943 0.24705882]
-   [0.38431373 0.5686275  0.16078432]
-   [0.57254905 0.79607844 0.3372549 ]
-   ...
-   [0.03529412 0.09803922 0.04705882]
-   [0.05882353 0.1254902  0.05490196]
-   [0.04705882 0.12156863 0.04313726]]
-
-  [[0.6        0.74509805 0.34117648]
-   [0.49019608 0.6745098  0.23529412]
-   [0.58431375 0.79607844 0.3254902 ]
-   ...
-   [0.02352941 0.07450981 0.03921569]
-   [0.03921569 0.09411765 0.04313726]
-   [0.03921569 0.10588235 0.03529412]]
-
-  [[0.58431375 0.73333335 0.34509805]
-   [0.49411765 0.6627451  0.23921569]
-   [0.5529412  0.7490196  0.29803923]
-   ...
-   [0.01960784 0.0627451  0.03137255]
-   [0.01176471 0.06666667 0.01568628]
-   [0.02352941 0.07843138 0.01960784]]]
-
-
- [[[0.44705883 0.65882355 0.65882355]
-   [0.44705883 0.65882355 0.65882355]
-   [0.44313726 0.654902   0.654902  ]
-   ...
-   [0.3882353  0.57254905 0.6117647 ]
-   [0.38431373 0.5686275  0.60784316]
-   [0.38431373 0.5686275  0.60784316]]
-
-  [[0.44313726 0.6627451  0.65882355]
-   [0.4392157  0.65882355 0.654902  ]
-   [0.43529412 0.654902   0.6509804 ]
-   ...
-   [0.38431373 0.5686275  0.60784316]
-   [0.38431373 0.5686275  0.60784316]
-   [0.3882353  0.5686275  0.61960787]]
-
-  [[0.43137255 0.6509804  0.64705884]
-   [0.42745098 0.64705884 0.6431373 ]
-   [0.42352942 0.6431373  0.6392157 ]
-   ...
-   [0.39607844 0.5686275  0.61960787]
-   [0.39607844 0.5686275  0.61960787]
-   [0.39607844 0.5686275  0.61960787]]
-
-  ...
-
-  [[0.89411765 0.89411765 0.89411765]
-   [0.89411765 0.89411765 0.89411765]
-   [0.90588236 0.90588236 0.90588236]
-   ...
-   [0.91764706 0.92156863 0.8901961 ]
-   [0.9137255  0.91764706 0.8862745 ]
-   [0.9098039  0.9137255  0.88235295]]
-
-  [[0.89411765 0.89411765 0.89411765]
-   [0.89411765 0.89411765 0.89411765]
-   [0.8980392  0.8980392  0.8980392 ]
-   ...
-   [0.93333334 0.9372549  0.91764706]
-   [0.92941177 0.93333334 0.9137255 ]
-   [0.92156863 0.9254902  0.90588236]]
-
-  [[0.8980392  0.8980392  0.8980392 ]
-   [0.89411765 0.89411765 0.89411765]
-   [0.8980392  0.8980392  0.8980392 ]
-   ...
-   [0.93333334 0.93333334 0.93333334]
-   [0.9254902  0.9254902  0.9254902 ]
-   [0.91764706 0.91764706 0.91764706]]]], shape=(8, 224, 224, 3), dtype=float32),
-  4: tf.Tensor(
-[[[[0.9607843  0.3254902  0.7921569 ]
-   [1.         0.3254902  0.78039217]
-   [0.94509804 0.3529412  0.73333335]
-   ...
-   [0.2        0.24705882 0.15294118]
-   [0.1882353  0.25490198 0.19215687]
-   [0.21960784 0.2901961  0.22745098]]
-
-  [[0.9882353  0.32941177 0.8039216 ]
-   [1.         0.32941177 0.7764706 ]
-   [0.9137255  0.3529412  0.7058824 ]
-   ...
-   [0.1882353  0.2509804  0.14901961]
-   [0.16470589 0.23529412 0.17254902]
-   [0.20784314 0.2784314  0.21568628]]
-
-  [[0.9843137  0.29411766 0.78039217]
-   [0.9607843  0.32156864 0.7490196 ]
-   [0.85882354 0.36078432 0.6784314 ]
-   ...
-   [0.18431373 0.25490198 0.15294118]
-   [0.15294118 0.23529412 0.16862746]
-   [0.1882353  0.27058825 0.20392157]]
-
-  ...
-
-  [[0.26666668 0.17254902 0.15686275]
-   [0.23137255 0.15686275 0.13333334]
-   [0.22745098 0.16862746 0.14901961]
-   ...
-   [0.28235295 0.44705883 0.29803923]
-   [0.3019608  0.4627451  0.29803923]
-   [0.3137255  0.46666667 0.29411766]]
-
-  [[0.2627451  0.19607843 0.16470589]
-   [0.21960784 0.16470589 0.12941177]
-   [0.22745098 0.17254902 0.13725491]
-   ...
-   [0.28235295 0.4392157  0.3019608 ]
-   [0.29803923 0.44705883 0.29411766]
-   [0.29411766 0.44313726 0.2901961 ]]
-
-  [[0.23137255 0.15294118 0.11764706]
-   [0.20392157 0.13725491 0.09803922]
-   [0.24313726 0.18039216 0.12941177]
-   ...
-   [0.29411766 0.4509804  0.3137255 ]
-   [0.29803923 0.44705883 0.3019608 ]
-   [0.28627452 0.42745098 0.2784314 ]]]
-
-
- [[[0.39215687 0.54509807 0.69803923]
-   [0.39215687 0.54509807 0.69803923]
-   [0.39215687 0.54509807 0.69803923]
-   ...
-   [0.32941177 0.49803922 0.6666667 ]
-   [0.32941177 0.49803922 0.6666667 ]
-   [0.33333334 0.5019608  0.67058825]]
-
-  [[0.39607844 0.5529412  0.69411767]
-   [0.39607844 0.5529412  0.69411767]
-   [0.39607844 0.5529412  0.69411767]
-   ...
-   [0.32941177 0.49803922 0.6666667 ]
-   [0.32941177 0.49803922 0.6666667 ]
-   [0.32941177 0.49803922 0.6666667 ]]
-
-  [[0.39607844 0.5529412  0.69411767]
-   [0.39607844 0.5529412  0.69411767]
-   [0.39607844 0.5529412  0.69411767]
-   ...
-   [0.32941177 0.49803922 0.6666667 ]
-   [0.3254902  0.49411765 0.6627451 ]
-   [0.3254902  0.49411765 0.6627451 ]]
-
-  ...
-
-  [[0.5058824  0.5803922  0.32941177]
-   [0.5019608  0.5764706  0.3254902 ]
-   [0.4862745  0.56078434 0.3019608 ]
-   ...
-   [0.08235294 0.16078432 0.01568628]
-   [0.09803922 0.1764706  0.03137255]
-   [0.08627451 0.16470589 0.01960784]]
-
-  [[0.47843137 0.5529412  0.29411766]
-   [0.49803922 0.57254905 0.3137255 ]
-   [0.49411765 0.5686275  0.30980393]
-   ...
-   [0.06666667 0.13725491 0.        ]
-   [0.08235294 0.15294118 0.00392157]
-   [0.09411765 0.1764706  0.02352941]]
-
-  [[0.4862745  0.56078434 0.3019608 ]
-   [0.49019608 0.5647059  0.30588236]
-   [0.46666667 0.5411765  0.28235295]
-   ...
-   [0.09019608 0.16078432 0.00392157]
-   [0.08627451 0.15686275 0.        ]
-   [0.11372549 0.18431373 0.02745098]]]
-
-
- [[[0.5568628  0.5019608  0.5529412 ]
-   [0.5568628  0.49411765 0.54509807]
-   [0.5529412  0.48235294 0.5372549 ]
-   ...
-   [0.5254902  0.5294118  0.50980395]
-   [0.54901963 0.5529412  0.5294118 ]
-   [0.5568628  0.56078434 0.5372549 ]]
-
-  [[0.5568628  0.5019608  0.5529412 ]
-   [0.5568628  0.49411765 0.54509807]
-   [0.5529412  0.48235294 0.5372549 ]
-   ...
-   [0.5254902  0.5294118  0.50980395]
-   [0.54509807 0.54901963 0.5254902 ]
-   [0.5529412  0.5568628  0.53333336]]
-
-  [[0.5647059  0.50980395 0.56078434]
-   [0.5647059  0.5019608  0.5529412 ]
-   [0.5647059  0.49411765 0.54901963]
-   ...
-   [0.5254902  0.5294118  0.50980395]
-   [0.5411765  0.54509807 0.52156866]
-   [0.54509807 0.54901963 0.5254902 ]]
-
-  ...
-
-  [[0.41960785 0.4117647  0.3529412 ]
-   [0.4        0.39607844 0.3254902 ]
-   [0.38039216 0.3882353  0.29411766]
-   ...
-   [0.08627451 0.27058825 0.        ]
-   [0.08235294 0.26666668 0.        ]
-   [0.07843138 0.2627451  0.        ]]
-
-  [[0.43137255 0.41568628 0.36862746]
-   [0.41568628 0.4117647  0.34117648]
-   [0.39215687 0.4        0.30588236]
-   ...
-   [0.08627451 0.2627451  0.        ]
-   [0.08627451 0.2627451  0.        ]
-   [0.08235294 0.25882354 0.        ]]
-
-  [[0.4392157  0.42352942 0.3764706 ]
-   [0.42352942 0.41960785 0.34901962]
-   [0.4        0.40784314 0.3137255 ]
-   ...
-   [0.09019608 0.26666668 0.        ]
-   [0.09019608 0.26666668 0.        ]
-   [0.08627451 0.2627451  0.        ]]]
-
-
- ...
-
-
- [[[0.39215687 0.46666667 0.10588235]
-   [0.39215687 0.46666667 0.11372549]
-   [0.4        0.4627451  0.11372549]
-   ...
-   [0.35686275 0.43137255 0.10980392]
-   [0.36078432 0.43529412 0.11372549]
-   [0.36078432 0.43529412 0.11372549]]
-
-  [[0.39607844 0.47058824 0.11764706]
-   [0.39607844 0.47058824 0.11764706]
-   [0.40392157 0.46666667 0.11764706]
-   ...
-   [0.35686275 0.43137255 0.10980392]
-   [0.36078432 0.43529412 0.11372549]
-   [0.36078432 0.43529412 0.11372549]]
-
-  [[0.40392157 0.47843137 0.12941177]
-   [0.4        0.4745098  0.1254902 ]
-   [0.40784314 0.46666667 0.13333334]
-   ...
-   [0.35686275 0.43137255 0.10980392]
-   [0.36078432 0.43529412 0.11372549]
-   [0.36078432 0.43529412 0.11372549]]
-
-  ...
-
-  [[0.3764706  0.45490196 0.11372549]
-   [0.3529412  0.44313726 0.09803922]
-   [0.34117648 0.43137255 0.08627451]
-   ...
-   [0.6509804  0.5882353  0.01176471]
-   [0.6431373  0.5803922  0.01176471]
-   [0.6392157  0.57254905 0.01568628]]
-
-  [[0.38039216 0.45882353 0.11764706]
-   [0.3529412  0.44313726 0.09803922]
-   [0.34117648 0.43137255 0.08627451]
-   ...
-   [0.64705884 0.58431375 0.01568628]
-   [0.6431373  0.5764706  0.01960784]
-   [0.63529414 0.5686275  0.01960784]]
-
-  [[0.38039216 0.45882353 0.11764706]
-   [0.3529412  0.44313726 0.09803922]
-   [0.34117648 0.43137255 0.08627451]
-   ...
-   [0.64705884 0.5803922  0.02352941]
-   [0.6431373  0.5764706  0.02745098]
-   [0.63529414 0.5686275  0.01960784]]]
-
-
- [[[0.46666667 0.48235294 0.14117648]
-   [0.4117647  0.45882353 0.12941177]
-   [0.3372549  0.40784314 0.08627451]
-   ...
-   [0.16078432 0.25490198 0.11372549]
-   [0.2509804  0.34901962 0.13333334]
-   [0.5137255  0.6117647  0.34509805]]
-
-  [[0.4509804  0.44705883 0.12156863]
-   [0.46666667 0.5019608  0.1764706 ]
-   [0.34509805 0.41960785 0.10196079]
-   ...
-   [0.15686275 0.24705882 0.13333334]
-   [0.16470589 0.2627451  0.10588235]
-   [0.24705882 0.34117648 0.14509805]]
-
-  [[0.45882353 0.43529412 0.09803922]
-   [0.45490196 0.49019608 0.13333334]
-   [0.3764706  0.47058824 0.09411765]
-   ...
-   [0.14901961 0.23921569 0.1254902 ]
-   [0.16078432 0.25490198 0.12156863]
-   [0.16078432 0.25882354 0.10588235]]
-
-  ...
-
-  [[0.08235294 0.11764706 0.05098039]
-   [0.06666667 0.11372549 0.02745098]
-   [0.09803922 0.14509805 0.05098039]
-   ...
-   [0.3529412  0.24705882 0.18039216]
-   [0.34901962 0.24313726 0.1764706 ]
-   [0.34117648 0.23529412 0.16862746]]
-
-  [[0.08235294 0.1254902  0.05882353]
-   [0.0627451  0.10980392 0.02352941]
-   [0.07843138 0.1254902  0.03137255]
-   ...
-   [0.3529412  0.24313726 0.1882353 ]
-   [0.3529412  0.24313726 0.1882353 ]
-   [0.34901962 0.23921569 0.18431373]]
-
-  [[0.07843138 0.12156863 0.05490196]
-   [0.05490196 0.10196079 0.02352941]
-   [0.07450981 0.12156863 0.02745098]
-   ...
-   [0.3372549  0.22745098 0.17254902]
-   [0.33333334 0.22352941 0.16862746]
-   [0.33333334 0.22352941 0.16862746]]]
-
-
- [[[0.76862746 0.72156864 0.6666667 ]
-   [0.7764706  0.7294118  0.68235296]
-   [0.78039217 0.73333335 0.6862745 ]
-   ...
-   [0.01568628 0.03137255 0.02745098]
-   [0.01568628 0.03137255 0.02745098]
-   [0.01568628 0.03137255 0.02745098]]
-
-  [[0.7764706  0.7294118  0.6666667 ]
-   [0.78039217 0.73333335 0.67058825]
-   [0.78039217 0.74509805 0.6784314 ]
-   ...
-   [0.01176471 0.02745098 0.02352941]
-   [0.01176471 0.02745098 0.02352941]
-   [0.01176471 0.02745098 0.02352941]]
-
-  [[0.7882353  0.74509805 0.6745098 ]
-   [0.7921569  0.7490196  0.6784314 ]
-   [0.7882353  0.75686276 0.68235296]
-   ...
-   [0.01176471 0.02745098 0.02352941]
-   [0.01176471 0.02745098 0.02352941]
-   [0.01176471 0.02745098 0.02352941]]
-
-  ...
-
-  [[0.07843138 0.07058824 0.02352941]
-   [0.10980392 0.09411765 0.05098039]
-   [0.13725491 0.10588235 0.0627451 ]
-   ...
-   [0.03921569 0.05882353 0.03529412]
-   [0.03921569 0.05882353 0.03529412]
-   [0.04313726 0.0627451  0.03921569]]
-
-  [[0.05882353 0.05882353 0.02745098]
-   [0.10196079 0.09019608 0.0627451 ]
-   [0.13725491 0.11764706 0.09411765]
-   ...
-   [0.03529412 0.05490196 0.03137255]
-   [0.03921569 0.05882353 0.03529412]
-   [0.03921569 0.05882353 0.03529412]]
-
-  [[0.05490196 0.05882353 0.03921569]
-   [0.09411765 0.09019608 0.07450981]
-   [0.13333334 0.12156863 0.10196079]
-   ...
-   [0.03529412 0.05490196 0.03137255]
-   [0.03529412 0.05490196 0.03137255]
-   [0.03921569 0.05882353 0.03529412]]]], shape=(8, 224, 224, 3), dtype=float32),
-  5: tf.Tensor(
-[[[[0.6039216  0.7647059  0.14509805]
-   [0.5372549  0.7176471  0.09019608]
-   [0.45490196 0.65882355 0.03137255]
-   ...
-   [0.29411766 0.40392157 0.0627451 ]
-   [0.31764707 0.4392157  0.07058824]
-   [0.3764706  0.5137255  0.11372549]]
-
-  [[0.5882353  0.7529412  0.11764706]
-   [0.5372549  0.7176471  0.08627451]
-   [0.47058824 0.6745098  0.03921569]
-   ...
-   [0.27450982 0.38431373 0.05098039]
-   [0.28627452 0.41960785 0.05098039]
-   [0.34901962 0.49019608 0.09803922]]
-
-  [[0.56078434 0.74509805 0.09411765]
-   [0.5294118  0.72156864 0.06666667]
-   [0.4862745  0.69411767 0.04313726]
-   ...
-   [0.23529412 0.36078432 0.02745098]
-   [0.2509804  0.3882353  0.02745098]
-   [0.3137255  0.45882353 0.08235294]]
-
-  ...
-
-  [[0.3137255  0.42352942 0.03137255]
-   [0.30588236 0.42352942 0.03137255]
-   [0.29803923 0.42352942 0.02745098]
-   ...
-   [0.42745098 0.58431375 0.06666667]
-   [0.38431373 0.53333336 0.05490196]
-   [0.3529412  0.4862745  0.05490196]]
-
-  [[0.3254902  0.4509804  0.03137255]
-   [0.3254902  0.45490196 0.03529412]
-   [0.31764707 0.45882353 0.04313726]
-   ...
-   [0.42352942 0.5764706  0.07058824]
-   [0.4        0.53333336 0.0627451 ]
-   [0.37254903 0.47843137 0.07450981]]
-
-  [[0.32941177 0.4627451  0.02352941]
-   [0.3372549  0.48235294 0.03921569]
-   [0.3372549  0.4862745  0.05098039]
-   ...
-   [0.43137255 0.57254905 0.08627451]
-   [0.4117647  0.52156866 0.07843138]
-   [0.39607844 0.46666667 0.07843138]]]
-
-
- [[[0.1254902  0.18431373 0.0627451 ]
-   [0.14509805 0.20392157 0.08235294]
-   [0.14901961 0.2        0.09019608]
-   ...
-   [0.32941177 0.4509804  0.14509805]
-   [0.34117648 0.4627451  0.16470589]
-   [0.36078432 0.48235294 0.18431373]]
-
-  [[0.10196079 0.16470589 0.05098039]
-   [0.07450981 0.13333334 0.01960784]
-   [0.10196079 0.16078432 0.04705882]
-   ...
-   [0.30980393 0.43137255 0.1254902 ]
-   [0.3137255  0.43529412 0.13725491]
-   [0.3254902  0.43529412 0.14117648]]
-
-  [[0.17254902 0.23529412 0.12941177]
-   [0.07843138 0.13333334 0.03137255]
-   [0.05882353 0.11764706 0.00392157]
-   ...
-   [0.32156864 0.44313726 0.13725491]
-   [0.31764707 0.42745098 0.13333334]
-   [0.30588236 0.41568628 0.12156863]]
-
-  ...
-
-  [[0.7607843  0.75686276 0.7411765 ]
-   [0.7372549  0.7411765  0.72156864]
-   [0.72156864 0.72156864 0.7137255 ]
-   ...
-   [0.5019608  0.5686275  0.42745098]
-   [0.4745098  0.5411765  0.4       ]
-   [0.44705883 0.5137255  0.37254903]]
-
-  [[0.8039216  0.8        0.78431374]
-   [0.76862746 0.77254903 0.7529412 ]
-   [0.73333335 0.7372549  0.7176471 ]
-   ...
-   [0.59607846 0.6627451  0.5372549 ]
-   [0.5764706  0.6431373  0.5176471 ]
-   [0.56078434 0.627451   0.5019608 ]]
-
-  [[0.85882354 0.85490197 0.8352941 ]
-   [0.8352941  0.8392157  0.8156863 ]
-   [0.80784315 0.8117647  0.7921569 ]
-   ...
-   [0.73333335 0.79607844 0.68235296]
-   [0.7372549  0.8039216  0.6784314 ]
-   [0.7294118  0.79607844 0.67058825]]]
-
-
- [[[0.33333334 0.5686275  0.22352941]
-   [0.43529412 0.5921569  0.35686275]
-   [0.14901961 0.24705882 0.16078432]
-   ...
-   [0.4627451  0.4509804  0.76862746]
-   [0.47843137 0.45882353 0.8117647 ]
-   [0.49803922 0.4862745  0.79607844]]
-
-  [[0.23137255 0.49411765 0.11372549]
-   [0.40784314 0.60784316 0.3137255 ]
-   [0.2509804  0.3764706  0.21568628]
-   ...
-   [0.48235294 0.47058824 0.8117647 ]
-   [0.48235294 0.45882353 0.8352941 ]
-   [0.49411765 0.48235294 0.8235294 ]]
-
-  [[0.18431373 0.47843137 0.08235294]
-   [0.31764707 0.5647059  0.20784314]
-   [0.3882353  0.5529412  0.29411766]
-   ...
-   [0.43137255 0.41568628 0.78431374]
-   [0.42745098 0.4        0.80784315]
-   [0.35686275 0.34117648 0.72156864]]
-
-  ...
-
-  [[0.01176471 0.03921569 0.        ]
-   [0.01568628 0.02352941 0.        ]
-   [0.03921569 0.02352941 0.01176471]
-   ...
-   [0.3254902  0.52156866 0.17254902]
-   [0.33333334 0.5372549  0.25490198]
-   [0.3137255  0.5137255  0.29411766]]
-
-  [[0.03137255 0.04705882 0.        ]
-   [0.03529412 0.03529412 0.00392157]
-   [0.03137255 0.01568628 0.00392157]
-   ...
-   [0.30588236 0.52156866 0.12156863]
-   [0.29803923 0.50980395 0.16470589]
-   [0.3019608  0.50980395 0.22745098]]
-
-  [[0.02352941 0.03137255 0.        ]
-   [0.01960784 0.01568628 0.        ]
-   [0.02745098 0.01176471 0.00784314]
-   ...
-   [0.29803923 0.52156866 0.10196079]
-   [0.2784314  0.5019608  0.12156863]
-   [0.27450982 0.49019608 0.16470589]]]
-
-
- ...
-
-
- [[[1.         0.99607843 1.        ]
-   [1.         0.99607843 0.9882353 ]
-   [1.         1.         0.9843137 ]
-   ...
-   [0.4627451  0.32156864 0.        ]
-   [0.4        0.36862746 0.        ]
-   [0.41960785 0.40784314 0.00392157]]
-
-  [[0.99607843 1.         0.9647059 ]
-   [0.99607843 1.         0.9647059 ]
-   [0.99607843 1.         0.95686275]
-   ...
-   [0.56078434 0.34509805 0.        ]
-   [0.46666667 0.3647059  0.        ]
-   [0.42352942 0.3764706  0.        ]]
-
-  [[0.9882353  1.         0.98039216]
-   [0.9764706  1.         0.9607843 ]
-   [0.98039216 1.         0.9647059 ]
-   ...
-   [0.7921569  0.49803922 0.17254902]
-   [0.5137255  0.31764707 0.        ]
-   [0.4392157  0.32156864 0.        ]]
-
-  ...
-
-  [[0.26666668 0.26666668 0.02352941]
-   [0.25882354 0.25882354 0.02352941]
-   [0.29411766 0.29803923 0.0627451 ]
-   ...
-   [0.15294118 0.19215687 0.        ]
-   [0.1764706  0.21568628 0.01960784]
-   [0.1764706  0.21176471 0.03529412]]
-
-  [[0.20784314 0.20392157 0.        ]
-   [0.20392157 0.19607843 0.        ]
-   [0.2509804  0.2509804  0.03921569]
-   ...
-   [0.15294118 0.1764706  0.00392157]
-   [0.18431373 0.20784314 0.02745098]
-   [0.16470589 0.1764706  0.00784314]]
-
-  [[0.1882353  0.18039216 0.        ]
-   [0.16862746 0.16078432 0.        ]
-   [0.21176471 0.20784314 0.01960784]
-   ...
-   [0.2901961  0.28627452 0.16470589]
-   [0.49803922 0.49803922 0.34901962]
-   [0.6        0.6039216  0.43137255]]]
-
-
- [[[0.8        0.7607843  0.3882353 ]
-   [0.8235294  0.8901961  0.5137255 ]
-   [0.78431374 0.9137255  0.5647059 ]
-   ...
-   [0.627451   0.7921569  0.39215687]
-   [0.64705884 0.80784315 0.40784314]
-   [0.627451   0.77254903 0.36078432]]
-
-  [[0.78039217 0.72156864 0.35686275]
-   [0.8039216  0.85882354 0.47843137]
-   [0.78431374 0.9019608  0.54901963]
-   ...
-   [0.59607846 0.75686276 0.34117648]
-   [0.627451   0.78039217 0.36078432]
-   [0.62352943 0.7647059  0.34117648]]
-
-  [[0.7764706  0.6862745  0.32156864]
-   [0.78431374 0.80784315 0.43137255]
-   [0.77254903 0.8784314  0.5137255 ]
-   ...
-   [0.56078434 0.7254902  0.29411766]
-   [0.60784316 0.75686276 0.32156864]
-   [0.62352943 0.75686276 0.3137255 ]]
-
-  ...
-
-  [[0.45490196 0.67058825 0.27058825]
-   [0.47058824 0.6862745  0.2901961 ]
-   [0.41960785 0.63529414 0.2784314 ]
-   ...
-   [0.18431373 0.35686275 0.05490196]
-   [0.21568628 0.38039216 0.09803922]
-   [0.2509804  0.4117647  0.14509805]]
-
-  [[0.45490196 0.6745098  0.29411766]
-   [0.41960785 0.63529414 0.26666668]
-   [0.33333334 0.54509807 0.2       ]
-   ...
-   [0.18431373 0.34901962 0.05882353]
-   [0.21960784 0.3764706  0.10196079]
-   [0.26666668 0.40392157 0.15294118]]
-
-  [[0.4117647  0.63529414 0.26666668]
-   [0.34117648 0.5568628  0.19215687]
-   [0.26666668 0.4745098  0.12941177]
-   ...
-   [0.1764706  0.34901962 0.03921569]
-   [0.21568628 0.38039216 0.09019608]
-   [0.24313726 0.4        0.1254902 ]]]
-
-
- [[[0.32156864 0.41960785 0.15294118]
-   [0.5294118  0.6313726  0.34117648]
-   [0.58431375 0.69411767 0.3647059 ]
-   ...
-   [0.6901961  0.8156863  0.28627452]
-   [0.69803923 0.827451   0.30588236]
-   [0.7019608  0.85490197 0.29411766]]
-
-  [[0.1764706  0.27450982 0.01960784]
-   [0.15686275 0.2509804  0.01568628]
-   [0.10980392 0.20392157 0.        ]
-   ...
-   [0.65882355 0.78039217 0.23921569]
-   [0.6901961  0.8156863  0.29411766]
-   [0.7019608  0.8352941  0.29411766]]
-
-  [[0.15686275 0.2509804  0.02352941]
-   [0.19607843 0.28627452 0.08235294]
-   [0.19215687 0.2627451  0.09803922]
-   ...
-   [0.6666667  0.77254903 0.2509804 ]
-   [0.6666667  0.77254903 0.26666668]
-   [0.6862745  0.8039216  0.29411766]]
-
-  ...
-
-  [[0.11764706 0.21176471 0.08627451]
-   [0.08627451 0.18039216 0.05490196]
-   [0.09803922 0.19215687 0.05098039]
-   ...
-   [0.21960784 0.2901961  0.08627451]
-   [0.23137255 0.30588236 0.12941177]
-   [0.07843138 0.14117648 0.        ]]
-
-  [[0.10196079 0.19607843 0.05490196]
-   [0.11372549 0.21176471 0.05882353]
-   [0.1882353  0.2901961  0.10588235]
-   ...
-   [0.23529412 0.29803923 0.11372549]
-   [0.10588235 0.17254902 0.        ]
-   [0.12156863 0.1764706  0.03529412]]
-
-  [[0.10196079 0.19607843 0.05490196]
-   [0.09019608 0.19607843 0.02745098]
-   [0.23921569 0.3529412  0.14117648]
-   ...
-   [0.19607843 0.25490198 0.10196079]
-   [0.11372549 0.1764706  0.03137255]
-   [0.09411765 0.14509805 0.02745098]]]], shape=(8, 224, 224, 3), dtype=float32),
-  6: tf.Tensor(
-[[[[0.05098039 0.10196079 0.03529412]
-   [0.05490196 0.10588235 0.03921569]
-   [0.0627451  0.11372549 0.04705882]
-   ...
-   [0.18039216 0.10980392 0.09411765]
-   [0.12156863 0.06666667 0.05490196]
-   [0.09803922 0.05490196 0.04705882]]
-
-  [[0.05882353 0.10980392 0.04313726]
-   [0.05882353 0.10980392 0.04313726]
-   [0.06666667 0.11764706 0.05098039]
-   ...
-   [0.16078432 0.10196079 0.08235294]
-   [0.11764706 0.07450981 0.06666667]
-   [0.10196079 0.05882353 0.05098039]]
-
-  [[0.05098039 0.10196079 0.03529412]
-   [0.05098039 0.10196079 0.03529412]
-   [0.05490196 0.10588235 0.03921569]
-   ...
-   [0.15294118 0.10196079 0.07843138]
-   [0.1254902  0.08235294 0.07450981]
-   [0.11764706 0.07058824 0.07058824]]
-
-  ...
-
-  [[0.05490196 0.10588235 0.07843138]
-   [0.06666667 0.11764706 0.09019608]
-   [0.0627451  0.11372549 0.08627451]
-   ...
-   [0.08235294 0.11372549 0.05490196]
-   [0.10588235 0.13725491 0.07843138]
-   [0.09803922 0.12941177 0.07058824]]
-
-  [[0.05490196 0.10588235 0.07843138]
-   [0.06666667 0.11764706 0.09019608]
-   [0.06666667 0.11764706 0.09019608]
-   ...
-   [0.08627451 0.10980392 0.0627451 ]
-   [0.09803922 0.12156863 0.06666667]
-   [0.09019608 0.11372549 0.05882353]]
-
-  [[0.07058824 0.11372549 0.09803922]
-   [0.07450981 0.11764706 0.10196079]
-   [0.07058824 0.11372549 0.09803922]
-   ...
-   [0.08235294 0.10588235 0.05882353]
-   [0.09411765 0.11764706 0.07058824]
-   [0.08627451 0.10980392 0.0627451 ]]]
-
-
- [[[0.00784314 0.08235294 0.00784314]
-   [0.00784314 0.08235294 0.00784314]
-   [0.00392157 0.07843138 0.00392157]
-   ...
-   [0.04313726 0.13725491 0.        ]
-   [0.05098039 0.14901961 0.        ]
-   [0.05490196 0.15294118 0.        ]]
-
-  [[0.00784314 0.08235294 0.00392157]
-   [0.00784314 0.08235294 0.00392157]
-   [0.00784314 0.08235294 0.00392157]
-   ...
-   [0.04313726 0.13725491 0.        ]
-   [0.05098039 0.14901961 0.        ]
-   [0.05490196 0.15294118 0.        ]]
-
-  [[0.00392157 0.09019608 0.        ]
-   [0.00392157 0.09019608 0.        ]
-   [0.00392157 0.09019608 0.        ]
-   ...
-   [0.04313726 0.13725491 0.        ]
-   [0.04705882 0.14509805 0.        ]
-   [0.05098039 0.14901961 0.        ]]
-
-  ...
-
-  [[0.12156863 0.21176471 0.        ]
-   [0.1254902  0.21568628 0.        ]
-   [0.13725491 0.21960784 0.        ]
-   ...
-   [0.26666668 0.34901962 0.08627451]
-   [0.26666668 0.34901962 0.08627451]
-   [0.2627451  0.34509805 0.08235294]]
-
-  [[0.11764706 0.20784314 0.        ]
-   [0.12156863 0.21176471 0.        ]
-   [0.13725491 0.21960784 0.        ]
-   ...
-   [0.27058825 0.3529412  0.09803922]
-   [0.26666668 0.34901962 0.09411765]
-   [0.2627451  0.34509805 0.09019608]]
-
-  [[0.11372549 0.20392157 0.        ]
-   [0.1254902  0.20784314 0.        ]
-   [0.13333334 0.21568628 0.        ]
-   ...
-   [0.27058825 0.3529412  0.09803922]
-   [0.26666668 0.34901962 0.09411765]
-   [0.26666668 0.34901962 0.09411765]]]
-
-
- [[[0.21568628 0.3372549  0.20392157]
-   [0.09411765 0.21568628 0.09019608]
-   [0.08235294 0.20392157 0.07843138]
-   ...
-   [0.24313726 0.41568628 0.20784314]
-   [0.21176471 0.40392157 0.18431373]
-   [0.19607843 0.39607844 0.17254902]]
-
-  [[0.19607843 0.31764707 0.18431373]
-   [0.08627451 0.20392157 0.07058824]
-   [0.05882353 0.1764706  0.04313726]
-   ...
-   [0.2509804  0.41960785 0.20784314]
-   [0.23137255 0.40784314 0.18431373]
-   [0.20784314 0.39607844 0.16078432]]
-
-  [[0.20392157 0.32156864 0.18039216]
-   [0.11372549 0.21960784 0.09019608]
-   [0.09411765 0.19607843 0.05882353]
-   ...
-   [0.3019608  0.45490196 0.23921569]
-   [0.28235295 0.44313726 0.21568628]
-   [0.25882354 0.43137255 0.19215687]]
-
-  ...
-
-  [[0.09803922 0.2627451  0.11372549]
-   [0.14901961 0.3137255  0.16470589]
-   [0.16470589 0.32941177 0.18039216]
-   ...
-   [0.78039217 0.8509804  0.654902  ]
-   [0.8156863  0.8784314  0.69411767]
-   [0.8039216  0.87058824 0.69411767]]
-
-  [[0.09411765 0.2509804  0.10588235]
-   [0.11372549 0.27450982 0.11764706]
-   [0.15294118 0.3137255  0.15686275]
-   ...
-   [0.7921569  0.85490197 0.6627451 ]
-   [0.80784315 0.85882354 0.6784314 ]
-   [0.79607844 0.85490197 0.6862745 ]]
-
-  [[0.10588235 0.26666668 0.10980392]
-   [0.09411765 0.25490198 0.09803922]
-   [0.11764706 0.2784314  0.12156863]
-   ...
-   [0.8156863  0.87058824 0.6784314 ]
-   [0.8117647  0.85490197 0.6862745 ]
-   [0.80784315 0.85882354 0.6901961 ]]]
-
-
- ...
-
-
- [[[0.3254902  0.2784314  0.09019608]
-   [0.34901962 0.28627452 0.05490196]
-   [0.38431373 0.3019608  0.03921569]
-   ...
-   [0.11372549 0.18039216 0.14117648]
-   [0.10196079 0.13333334 0.14509805]
-   [0.11764706 0.1254902  0.1764706 ]]
-
-  [[0.30588236 0.26666668 0.07450981]
-   [0.3372549  0.2784314  0.05490196]
-   [0.3764706  0.2901961  0.05490196]
-   ...
-   [0.19215687 0.32941177 0.24313726]
-   [0.14117648 0.24313726 0.20784314]
-   [0.10588235 0.1764706  0.1764706 ]]
-
-  [[0.28627452 0.2627451  0.02745098]
-   [0.33333334 0.29411766 0.02352941]
-   [0.3882353  0.30980393 0.03137255]
-   ...
-   [0.25882354 0.4862745  0.32941177]
-   [0.2        0.39607844 0.28235295]
-   [0.16078432 0.33333334 0.24313726]]
-
-  ...
-
-  [[0.0627451  0.12156863 0.03921569]
-   [0.09803922 0.09411765 0.01568628]
-   [0.13333334 0.10980392 0.02352941]
-   ...
-   [0.2        0.49411765 0.3764706 ]
-   [0.1882353  0.46666667 0.34901962]
-   [0.15686275 0.42745098 0.30588236]]
-
-  [[0.06666667 0.08235294 0.02352941]
-   [0.12156863 0.09411765 0.02352941]
-   [0.13333334 0.10980392 0.01568628]
-   ...
-   [0.21568628 0.5019608  0.3882353 ]
-   [0.1882353  0.46666667 0.34901962]
-   [0.17254902 0.43529412 0.3137255 ]]
-
-  [[0.08235294 0.07450981 0.02352941]
-   [0.15686275 0.10980392 0.05490196]
-   [0.16078432 0.12941177 0.03921569]
-   ...
-   [0.22745098 0.5137255  0.40784314]
-   [0.20392157 0.4745098  0.36078432]
-   [0.1882353  0.44313726 0.3254902 ]]]
-
-
- [[[0.43137255 0.6784314  0.80784315]
-   [0.43137255 0.6784314  0.80784315]
-   [0.42745098 0.6745098  0.8039216 ]
-   ...
-   [0.19215687 0.44705883 0.6117647 ]
-   [0.1882353  0.44313726 0.60784316]
-   [0.19215687 0.44705883 0.6117647 ]]
-
-  [[0.42745098 0.6745098  0.8039216 ]
-   [0.42745098 0.6745098  0.8039216 ]
-   [0.42745098 0.6745098  0.8039216 ]
-   ...
-   [0.18431373 0.44705883 0.6117647 ]
-   [0.18039216 0.44313726 0.60784316]
-   [0.18431373 0.44705883 0.6117647 ]]
-
-  [[0.42745098 0.6745098  0.8039216 ]
-   [0.42745098 0.6745098  0.8039216 ]
-   [0.43137255 0.6784314  0.80784315]
-   ...
-   [0.19215687 0.45490196 0.61960787]
-   [0.1882353  0.4509804  0.6156863 ]
-   [0.1882353  0.4509804  0.6156863 ]]
-
-  ...
-
-  [[0.34901962 0.6117647  0.7176471 ]
-   [0.34901962 0.6117647  0.7176471 ]
-   [0.34901962 0.6117647  0.7176471 ]
-   ...
-   [0.27058825 0.46666667 0.5019608 ]
-   [0.28235295 0.49019608 0.56078434]
-   [0.28235295 0.49411765 0.59607846]]
-
-  [[0.34509805 0.60784316 0.7137255 ]
-   [0.34901962 0.6039216  0.7137255 ]
-   [0.34901962 0.6039216  0.7137255 ]
-   ...
-   [0.29411766 0.52156866 0.60784316]
-   [0.28627452 0.52156866 0.6313726 ]
-   [0.28235295 0.5137255  0.6392157 ]]
-
-  [[0.34901962 0.6039216  0.7137255 ]
-   [0.34901962 0.6039216  0.7137255 ]
-   [0.34901962 0.6039216  0.7137255 ]
-   ...
-   [0.28627452 0.5058824  0.6039216 ]
-   [0.29803923 0.5176471  0.6156863 ]
-   [0.2901961  0.50980395 0.60784316]]]
-
-
- [[[0.14117648 0.27450982 0.1764706 ]
-   [0.19607843 0.34901962 0.24313726]
-   [0.21568628 0.39215687 0.2784314 ]
-   ...
-   [0.3254902  0.5019608  0.41960785]
-   [0.30980393 0.5019608  0.3882353 ]
-   [0.26666668 0.46666667 0.34509805]]
-
-  [[0.11764706 0.25882354 0.15686275]
-   [0.16862746 0.32156864 0.21568628]
-   [0.1882353  0.3647059  0.2509804 ]
-   ...
-   [0.28627452 0.4509804  0.35686275]
-   [0.28235295 0.45882353 0.3372549 ]
-   [0.26666668 0.4509804  0.31764707]]
-
-  [[0.11764706 0.25882354 0.14901961]
-   [0.15294118 0.3137255  0.19607843]
-   [0.17254902 0.34901962 0.22745098]
-   ...
-   [0.17254902 0.3254902  0.21176471]
-   [0.15686275 0.3137255  0.18039216]
-   [0.13725491 0.3019608  0.15294118]]
-
-  ...
-
-  [[0.22352941 0.2901961  0.22745098]
-   [0.2        0.2901961  0.18039216]
-   [0.1764706  0.28235295 0.15294118]
-   ...
-   [0.09019608 0.29411766 0.11372549]
-   [0.08627451 0.2784314  0.10196079]
-   [0.07843138 0.25490198 0.09411765]]
-
-  [[0.21568628 0.27058825 0.21176471]
-   [0.19215687 0.27058825 0.16470589]
-   [0.16862746 0.26666668 0.14117648]
-   ...
-   [0.09019608 0.29411766 0.11372549]
-   [0.08627451 0.2784314  0.10196079]
-   [0.08627451 0.2627451  0.09411765]]
-
-  [[0.20392157 0.2509804  0.20392157]
-   [0.18039216 0.2509804  0.15686275]
-   [0.16078432 0.2509804  0.13725491]
-   ...
-   [0.08627451 0.2901961  0.10196079]
-   [0.08235294 0.2784314  0.08627451]
-   [0.09019608 0.27058825 0.09019608]]]], shape=(8, 224, 224, 3), dtype=float32),
-  7: tf.Tensor(
-[[[[0.36862746 0.49411765 0.24705882]
-   [0.36862746 0.49411765 0.24705882]
-   [0.3647059  0.4862745  0.2509804 ]
-   ...
-   [0.32156864 0.4627451  0.18039216]
-   [0.3254902  0.46666667 0.19215687]
-   [0.30588236 0.43529412 0.16470589]]
-
-  [[0.36078432 0.4862745  0.23921569]
-   [0.36078432 0.48235294 0.24705882]
-   [0.36078432 0.48235294 0.24705882]
-   ...
-   [0.3254902  0.46666667 0.18431373]
-   [0.31764707 0.45882353 0.18431373]
-   [0.2901961  0.41568628 0.15294118]]
-
-  [[0.3529412  0.4745098  0.23921569]
-   [0.35686275 0.47843137 0.24313726]
-   [0.35686275 0.47843137 0.24313726]
-   ...
-   [0.3254902  0.46666667 0.18431373]
-   [0.3019608  0.44313726 0.16862746]
-   [0.2627451  0.3882353  0.1254902 ]]
-
-  ...
-
-  [[0.21176471 0.32156864 0.09411765]
-   [0.21176471 0.32156864 0.09019608]
-   [0.20784314 0.31764707 0.08627451]
-   ...
-   [0.01960784 0.13725491 0.        ]
-   [0.01960784 0.14509805 0.        ]
-   [0.01176471 0.14901961 0.        ]]
-
-  [[0.21960784 0.32941177 0.10196079]
-   [0.21960784 0.32941177 0.09803922]
-   [0.21568628 0.3254902  0.09411765]
-   ...
-   [0.01960784 0.13725491 0.        ]
-   [0.01960784 0.14509805 0.        ]
-   [0.01176471 0.14901961 0.        ]]
-
-  [[0.22352941 0.33333334 0.10588235]
-   [0.22352941 0.33333334 0.10196079]
-   [0.21568628 0.3254902  0.09411765]
-   ...
-   [0.01960784 0.14509805 0.        ]
-   [0.01176471 0.14901961 0.        ]
-   [0.01568628 0.15294118 0.        ]]]
-
-
- [[[0.22352941 0.21176471 0.15294118]
-   [0.22352941 0.21176471 0.15294118]
-   [0.22745098 0.21568628 0.15686275]
-   ...
-   [0.20784314 0.1882353  0.10196079]
-   [0.2        0.19215687 0.10196079]
-   [0.2        0.19215687 0.10196079]]
-
-  [[0.22745098 0.21568628 0.15686275]
-   [0.22745098 0.21568628 0.15686275]
-   [0.22352941 0.21176471 0.15294118]
-   ...
-   [0.20784314 0.1882353  0.10196079]
-   [0.19607843 0.1882353  0.09803922]
-   [0.19607843 0.1882353  0.09803922]]
-
-  [[0.23137255 0.21960784 0.16078432]
-   [0.22745098 0.21568628 0.15686275]
-   [0.21960784 0.20784314 0.14901961]
-   ...
-   [0.20784314 0.1882353  0.10196079]
-   [0.2        0.19215687 0.10196079]
-   [0.19607843 0.1882353  0.09803922]]
-
-  ...
-
-  [[0.01176471 0.0627451  0.02352941]
-   [0.02745098 0.09411765 0.05490196]
-   [0.01176471 0.11764706 0.09803922]
-   ...
-   [0.16470589 0.00392157 0.        ]
-   [0.16862746 0.         0.        ]
-   [0.17254902 0.         0.        ]]
-
-  [[0.00784314 0.07058824 0.02745098]
-   [0.01960784 0.07058824 0.03137255]
-   [0.         0.08235294 0.07058824]
-   ...
-   [0.16470589 0.00392157 0.        ]
-   [0.16078432 0.         0.        ]
-   [0.1764706  0.00392157 0.        ]]
-
-  [[0.00784314 0.07058824 0.01960784]
-   [0.03921569 0.07843138 0.04313726]
-   [0.         0.08235294 0.0627451 ]
-   ...
-   [0.16470589 0.00392157 0.        ]
-   [0.16078432 0.         0.        ]
-   [0.18039216 0.00784314 0.00392157]]]
-
-
- [[[0.23137255 0.16078432 0.07450981]
-   [0.34509805 0.27450982 0.1882353 ]
-   [0.5058824  0.44705883 0.3647059 ]
-   ...
-   [0.47843137 0.44313726 0.3764706 ]
-   [0.5529412  0.5019608  0.4392157 ]
-   [0.5647059  0.50980395 0.46666667]]
-
-  [[0.24705882 0.16470589 0.08235294]
-   [0.13333334 0.0627451  0.        ]
-   [0.2509804  0.18431373 0.10588235]
-   ...
-   [0.5568628  0.50980395 0.44705883]
-   [0.53333336 0.48235294 0.41960785]
-   [0.41960785 0.35686275 0.30588236]]
-
-  [[0.3882353  0.30588236 0.22352941]
-   [0.3254902  0.24313726 0.16078432]
-   [0.27058825 0.20392157 0.1254902 ]
-   ...
-   [0.5254902  0.48235294 0.4117647 ]
-   [0.39607844 0.3372549  0.2627451 ]
-   [0.32156864 0.25882354 0.19607843]]
-
-  ...
-
-  [[0.3019608  0.27450982 0.17254902]
-   [0.3372549  0.2784314  0.15686275]
-   [0.4509804  0.36078432 0.23529412]
-   ...
-   [0.41568628 0.35686275 0.13333334]
-   [0.39215687 0.3254902  0.15686275]
-   [0.4        0.3254902  0.19607843]]
-
-  [[0.36862746 0.32941177 0.22352941]
-   [0.32156864 0.25490198 0.13725491]
-   [0.40392157 0.30980393 0.1764706 ]
-   ...
-   [0.41568628 0.35686275 0.13333334]
-   [0.4        0.33333334 0.16470589]
-   [0.40784314 0.33333334 0.20392157]]
-
-  [[0.47058824 0.43137255 0.3254902 ]
-   [0.36862746 0.30588236 0.1764706 ]
-   [0.40784314 0.3137255  0.17254902]
-   ...
-   [0.41568628 0.35686275 0.13333334]
-   [0.4117647  0.34509805 0.1764706 ]
-   [0.42745098 0.35686275 0.21568628]]]
-
-
- ...
-
-
- [[[0.3019608  0.36862746 0.09411765]
-   [0.2784314  0.34509805 0.07058824]
-   [0.2627451  0.32941177 0.05490196]
-   ...
-   [0.24313726 0.22745098 0.19215687]
-   [0.22745098 0.21176471 0.1764706 ]
-   [0.20392157 0.1882353  0.15294118]]
-
-  [[0.3372549  0.40392157 0.12941177]
-   [0.30588236 0.37254903 0.09803922]
-   [0.2784314  0.34509805 0.07058824]
-   ...
-   [0.23921569 0.22352941 0.1882353 ]
-   [0.22352941 0.20784314 0.17254902]
-   [0.19607843 0.18039216 0.14509805]]
-
-  [[0.36862746 0.43529412 0.16862746]
-   [0.3372549  0.40392157 0.13725491]
-   [0.30980393 0.3764706  0.10980392]
-   ...
-   [0.20392157 0.1882353  0.15294118]
-   [0.2        0.18431373 0.14901961]
-   [0.18431373 0.16862746 0.13333334]]
-
-  ...
-
-  [[0.12941177 0.12941177 0.09803922]
-   [0.14117648 0.14117648 0.10980392]
-   [0.16470589 0.15294118 0.1254902 ]
-   ...
-   [0.16078432 0.14901961 0.09019608]
-   [0.1764706  0.16078432 0.11372549]
-   [0.15294118 0.13725491 0.09411765]]
-
-  [[0.09803922 0.10196079 0.07058824]
-   [0.12156863 0.12156863 0.09019608]
-   [0.14509805 0.14509805 0.11372549]
-   ...
-   [0.21568628 0.2        0.15294118]
-   [0.19215687 0.1764706  0.13333334]
-   [0.18039216 0.16470589 0.12941177]]
-
-  [[0.08627451 0.09019608 0.06666667]
-   [0.10196079 0.10196079 0.07058824]
-   [0.11764706 0.11764706 0.08627451]
-   ...
-   [0.24705882 0.23137255 0.1882353 ]
-   [0.1882353  0.17254902 0.12941177]
-   [0.17254902 0.15686275 0.12156863]]]
-
-
- [[[0.95686275 1.         0.9882353 ]
-   [0.9529412  1.         0.9843137 ]
-   [0.95686275 1.         0.9843137 ]
-   ...
-   [0.85490197 0.9411765  0.99607843]
-   [0.8509804  0.9254902  0.9843137 ]
-   [0.84313726 0.91764706 0.9764706 ]]
-
-  [[0.9411765  1.         0.9882353 ]
-   [0.9411765  1.         0.9882353 ]
-   [0.9490196  0.99607843 0.9882353 ]
-   ...
-   [0.85490197 0.9411765  0.9843137 ]
-   [0.85490197 0.93333334 0.9764706 ]
-   [0.84705883 0.9254902  0.96862745]]
-
-  [[0.92156863 0.99607843 0.9882353 ]
-   [0.9254902  1.         0.99215686]
-   [0.9254902  1.         0.99215686]
-   ...
-   [0.8627451  0.9529412  0.9764706 ]
-   [0.8627451  0.9411765  0.9764706 ]
-   [0.85490197 0.93333334 0.96862745]]
-
-  ...
-
-  [[0.05490196 0.11372549 0.03137255]
-   [0.0627451  0.13333334 0.04705882]
-   [0.05490196 0.13333334 0.03529412]
-   ...
-   [0.2784314  0.3254902  0.23921569]
-   [0.19215687 0.23921569 0.16078432]
-   [0.29411766 0.3372549  0.27058825]]
-
-  [[0.05098039 0.11372549 0.01176471]
-   [0.08627451 0.14509805 0.07058824]
-   [0.03921569 0.10588235 0.03137255]
-   ...
-   [0.4392157  0.4745098  0.4627451 ]
-   [0.41568628 0.45490196 0.4509804 ]
-   [0.38039216 0.41960785 0.41568628]]
-
-  [[0.07450981 0.12941177 0.03137255]
-   [0.05882353 0.11764706 0.04313726]
-   [0.03921569 0.10588235 0.04313726]
-   ...
-   [0.19215687 0.20784314 0.20392157]
-   [0.15686275 0.17254902 0.16862746]
-   [0.15294118 0.16862746 0.16470589]]]
-
-
- [[[0.26666668 0.41960785 0.        ]
-   [0.25490198 0.40784314 0.        ]
-   [0.2509804  0.40392157 0.        ]
-   ...
-   [0.42745098 0.4117647  0.01960784]
-   [0.43529412 0.42352942 0.04313726]
-   [0.4392157  0.42745098 0.05490196]]
-
-  [[0.27058825 0.42352942 0.00392157]
-   [0.25882354 0.4117647  0.        ]
-   [0.25490198 0.40784314 0.        ]
-   ...
-   [0.43529412 0.41960785 0.02745098]
-   [0.44313726 0.43137255 0.05098039]
-   [0.44705883 0.43529412 0.0627451 ]]
-
-  [[0.27450982 0.42745098 0.        ]
-   [0.26666668 0.41960785 0.        ]
-   [0.25882354 0.4117647  0.        ]
-   ...
-   [0.44313726 0.43529412 0.03921569]
-   [0.4509804  0.44313726 0.05098039]
-   [0.44705883 0.44705883 0.0627451 ]]
-
-  ...
-
-  [[0.42745098 0.54901963 0.09019608]
-   [0.43137255 0.5529412  0.08627451]
-   [0.43137255 0.5529412  0.08235294]
-   ...
-   [0.21568628 0.38039216 0.        ]
-   [0.22745098 0.37254903 0.        ]
-   [0.22745098 0.37254903 0.        ]]
-
-  [[0.43137255 0.5529412  0.08627451]
-   [0.43137255 0.5529412  0.08627451]
-   [0.43529412 0.5568628  0.08627451]
-   ...
-   [0.23137255 0.39607844 0.00392157]
-   [0.23921569 0.39607844 0.00784314]
-   [0.24705882 0.39607844 0.00784314]]
-
-  [[0.43137255 0.5529412  0.08627451]
-   [0.43529412 0.5568628  0.09019608]
-   [0.4392157  0.56078434 0.09019608]
-   ...
-   [0.23137255 0.39607844 0.00392157]
-   [0.23921569 0.39607844 0.00784314]
-   [0.24705882 0.39607844 0.00784314]]]], shape=(8, 224, 224, 3), dtype=float32)
-}</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">prob_dists</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-56-98cb34dbd32b&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>loss <span class="ansi-blue-fg">=</span> loss_function<span class="ansi-blue-fg">(</span>labels<span class="ansi-blue-fg">,</span> prob_dists<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">NameError</span>: name 'prob_dists' is not defined</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">per_replica_losses</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_step</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">per_replica_losses</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>PerReplica:{
-  0: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  1: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  2: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  3: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  4: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  5: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  6: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;,
-  7: &lt;tf.Tensor: shape=(), dtype=float32, numpy=nan&gt;
-}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    
-
-    
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span> <span class="n">per_replica_losses</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">metrics_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'train_loss'</span><span class="p">,</span><span class="s1">'train_acc'</span><span class="p">]</span> 
+<span class="n">pbar</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">Progbar</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">stateful_metrics</span><span class="o">=</span><span class="n">metrics_names</span><span class="p">)</span>
+
+<span class="n">train_loss_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+<span class="n">train_acc_obj</span><span class="o">.</span><span class="n">reset_states</span><span class="p">()</span>
+<span class="n">train_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">train_dist_ds</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">train_loss</span> <span class="o">=</span> <span class="n">distributed_train_step</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">train_iter</span><span class="p">))</span>
+    <span class="n">train_loss_obj</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span>
+    <span class="n">values</span><span class="o">=</span><span class="p">[(</span><span class="s1">'train_loss'</span><span class="p">,</span> <span class="n">train_loss_obj</span><span class="o">.</span><span class="n">result</span><span class="p">()),</span>
+            <span class="p">(</span><span class="s1">'train_acc'</span><span class="p">,</span> <span class="n">train_acc_obj</span><span class="o">.</span><span class="n">result</span><span class="p">())]</span>
+    <span class="n">pbar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -4253,6 +1810,95 @@ Number of test set:  7382
 </pre></div>
 
     </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">dist_inputs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_dist_ds</span><span class="p">):</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">distributed_valid_step</span><span class="p">(</span><span class="n">dist_inputs</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 tf.Tensor(3.570969, shape=(), dtype=float32)
+1 tf.Tensor(3.8705213, shape=(), dtype=float32)
+2 tf.Tensor(4.25839, shape=(), dtype=float32)
+3 tf.Tensor(3.8201447, shape=(), dtype=float32)
+4 tf.Tensor(3.7461593, shape=(), dtype=float32)
+5 tf.Tensor(3.9314394, shape=(), dtype=float32)
+6 tf.Tensor(4.155122, shape=(), dtype=float32)
+7 tf.Tensor(3.7064786, shape=(), dtype=float32)
+8 tf.Tensor(3.8414986, shape=(), dtype=float32)
+9 tf.Tensor(4.1205435, shape=(), dtype=float32)
+10 tf.Tensor(3.630474, shape=(), dtype=float32)
+11 tf.Tensor(3.7854881, shape=(), dtype=float32)
+12 tf.Tensor(4.143016, shape=(), dtype=float32)
+13 tf.Tensor(4.1602516, shape=(), dtype=float32)
+14 tf.Tensor(3.9680705, shape=(), dtype=float32)
+15 tf.Tensor(3.7636342, shape=(), dtype=float32)
+16 tf.Tensor(3.8127499, shape=(), dtype=float32)
+17 tf.Tensor(3.953715, shape=(), dtype=float32)
+18 tf.Tensor(3.7757626, shape=(), dtype=float32)
+19 tf.Tensor(3.774196, shape=(), dtype=float32)
+20 tf.Tensor(3.5931616, shape=(), dtype=float32)
+21 tf.Tensor(3.8924353, shape=(), dtype=float32)
+22 tf.Tensor(3.658459, shape=(), dtype=float32)
+23 tf.Tensor(3.8124623, shape=(), dtype=float32)
+24 tf.Tensor(3.8944626, shape=(), dtype=float32)
+25 tf.Tensor(3.7382774, shape=(), dtype=float32)
+26 tf.Tensor(3.6387048, shape=(), dtype=float32)
+27 tf.Tensor(3.8187575, shape=(), dtype=float32)
+28 tf.Tensor(3.9776459, shape=(), dtype=float32)
+29 tf.Tensor(3.8833735, shape=(), dtype=float32)
+30 tf.Tensor(3.8113515, shape=(), dtype=float32)
+31 tf.Tensor(3.956698, shape=(), dtype=float32)
+32 tf.Tensor(3.8510275, shape=(), dtype=float32)
+33 tf.Tensor(3.6726203, shape=(), dtype=float32)
+34 tf.Tensor(3.9271455, shape=(), dtype=float32)
+35 tf.Tensor(3.814221, shape=(), dtype=float32)
+36 tf.Tensor(3.6223822, shape=(), dtype=float32)
+37 tf.Tensor(3.7693067, shape=(), dtype=float32)
+38 tf.Tensor(3.779972, shape=(), dtype=float32)
+39 tf.Tensor(3.9909935, shape=(), dtype=float32)
+40 tf.Tensor(3.4878628, shape=(), dtype=float32)
+41 tf.Tensor(4.137429, shape=(), dtype=float32)
+42 tf.Tensor(3.9741225, shape=(), dtype=float32)
+43 tf.Tensor(3.8006587, shape=(), dtype=float32)
+44 tf.Tensor(3.831369, shape=(), dtype=float32)
+45 tf.Tensor(3.3780696, shape=(), dtype=float32)
+46 tf.Tensor(3.7256963, shape=(), dtype=float32)
+47 tf.Tensor(4.082179, shape=(), dtype=float32)
+48 tf.Tensor(3.6063194, shape=(), dtype=float32)
+49 tf.Tensor(3.5007787, shape=(), dtype=float32)
+50 tf.Tensor(4.2315507, shape=(), dtype=float32)
+51 tf.Tensor(3.7188752, shape=(), dtype=float32)
+52 tf.Tensor(4.033246, shape=(), dtype=float32)
+53 tf.Tensor(3.7638342, shape=(), dtype=float32)
+54 tf.Tensor(3.86497, shape=(), dtype=float32)
+55 tf.Tensor(3.6536753, shape=(), dtype=float32)
+56 tf.Tensor(3.454422, shape=(), dtype=float32)
+57 tf.Tensor(3.7588303, shape=(), dtype=float32)
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -4443,116 +2089,15 @@ Number of test set:  7382
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>258/258 [===============] - 879s 2s/step - train_loss: 2.6979 - train_acc: 0.4987 - valid_loss: nan - valid_acc: 0.0213
-258/258 [===============] - 87s 331ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+<pre>258/258 [===============] - 882s 2s/step - train_loss: 2.7074 - train_acc: 0.4978 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 86s 329ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 86s 329ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
 258/258 [===============] - 87s 332ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
- 89/258 [====&gt;..........] - ETA: 1:03 - train_loss: nan - train_acc: 0.0202</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">KeyboardInterrupt</span>                         Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;ipython-input-43-854ef3542942&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
-<span class="ansi-green-intense-fg ansi-bold">     27</span>     <span class="ansi-green-fg">for</span> _ <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span>N_TRAIN_STEPS<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     28</span>         train_loss <span class="ansi-blue-fg">=</span> distributed_train_step<span class="ansi-blue-fg">(</span>next<span class="ansi-blue-fg">(</span>train_iter<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 29</span><span class="ansi-red-fg">         </span>train_loss_obj<span class="ansi-blue-fg">(</span>train_loss<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     30</span>         values=[('train_loss', train_loss_obj.result()),
-<span class="ansi-green-intense-fg ansi-bold">     31</span>                 ('train_acc', train_acc_obj.result())]
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">__call__</span><span class="ansi-blue-fg">(self, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    235</span>     <span class="ansi-green-fg">from</span> tensorflow<span class="ansi-blue-fg">.</span>python<span class="ansi-blue-fg">.</span>keras<span class="ansi-blue-fg">.</span>distribute <span class="ansi-green-fg">import</span> distributed_training_utils  <span class="ansi-red-fg"># pylint:disable=g-import-not-at-top</span>
-<span class="ansi-green-intense-fg ansi-bold">    236</span>     return distributed_training_utils.call_replica_local_fn(
-<span class="ansi-green-fg">--&gt; 237</span><span class="ansi-red-fg">         replica_local_fn, *args, **kwargs)
-</span><span class="ansi-green-intense-fg ansi-bold">    238</span> 
-<span class="ansi-green-intense-fg ansi-bold">    239</span>   <span class="ansi-blue-fg">@</span>property
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/distribute/distributed_training_utils.py</span> in <span class="ansi-cyan-fg">call_replica_local_fn</span><span class="ansi-blue-fg">(fn, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     64</span>     <span class="ansi-green-fg">with</span> strategy<span class="ansi-blue-fg">.</span>scope<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">     65</span>       <span class="ansi-green-fg">return</span> strategy<span class="ansi-blue-fg">.</span>extended<span class="ansi-blue-fg">.</span>call_for_each_replica<span class="ansi-blue-fg">(</span>fn<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">---&gt; 66</span><span class="ansi-red-fg">   </span><span class="ansi-green-fg">return</span> fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">replica_local_fn</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    215</span>         update_op <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
-<span class="ansi-green-intense-fg ansi-bold">    216</span>       <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 217</span><span class="ansi-red-fg">         </span>update_op <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>update_state<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>  <span class="ansi-red-fg"># pylint: disable=not-callable</span>
-<span class="ansi-green-intense-fg ansi-bold">    218</span>       update_ops <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">    219</span>       <span class="ansi-green-fg">if</span> update_op <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/utils/metrics_utils.py</span> in <span class="ansi-cyan-fg">decorated</span><span class="ansi-blue-fg">(metric_obj, *args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">     88</span> 
-<span class="ansi-green-intense-fg ansi-bold">     89</span>     <span class="ansi-green-fg">with</span> tf_utils<span class="ansi-blue-fg">.</span>graph_context_for_symbolic_tensors<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">---&gt; 90</span><span class="ansi-red-fg">       </span>update_op <span class="ansi-blue-fg">=</span> update_state_fn<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">     91</span>     <span class="ansi-green-fg">if</span> update_op <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># update_op will be None in eager execution.</span>
-<span class="ansi-green-intense-fg ansi-bold">     92</span>       metric_obj<span class="ansi-blue-fg">.</span>add_update<span class="ansi-blue-fg">(</span>update_op<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">update_state_fn</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    175</span>         control_status <span class="ansi-blue-fg">=</span> ag_ctx<span class="ansi-blue-fg">.</span>control_status_ctx<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    176</span>         ag_update_state <span class="ansi-blue-fg">=</span> autograph<span class="ansi-blue-fg">.</span>tf_convert<span class="ansi-blue-fg">(</span>obj_update_state<span class="ansi-blue-fg">,</span> control_status<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 177</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">return</span> ag_update_state<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    178</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    179</span>       <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>obj<span class="ansi-blue-fg">.</span>update_state<span class="ansi-blue-fg">,</span> def_function<span class="ansi-blue-fg">.</span>Function<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    665</span>       <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    666</span>         <span class="ansi-green-fg">with</span> conversion_ctx<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 667</span><span class="ansi-red-fg">           </span><span class="ansi-green-fg">return</span> converted_call<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">,</span> options<span class="ansi-blue-fg">=</span>options<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    668</span>       <span class="ansi-green-fg">except</span> Exception <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>  <span class="ansi-red-fg"># pylint:disable=broad-except</span>
-<span class="ansi-green-intense-fg ansi-bold">    669</span>         <span class="ansi-green-fg">if</span> hasattr<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">'ag_error_metadata'</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">converted_call</span><span class="ansi-blue-fg">(f, args, kwargs, caller_fn_scope, options)</span>
-<span class="ansi-green-intense-fg ansi-bold">    348</span>   <span class="ansi-green-fg">if</span> conversion<span class="ansi-blue-fg">.</span>is_in_allowlist_cache<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> options<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    349</span>     logging<span class="ansi-blue-fg">.</span>log<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">2</span><span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">'Allowlisted %s: from cache'</span><span class="ansi-blue-fg">,</span> f<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-fg">--&gt; 350</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> _call_unconverted<span class="ansi-blue-fg">(</span>f<span class="ansi-blue-fg">,</span> args<span class="ansi-blue-fg">,</span> kwargs<span class="ansi-blue-fg">,</span> options<span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">False</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    351</span> 
-<span class="ansi-green-intense-fg ansi-bold">    352</span>   <span class="ansi-green-fg">if</span> ag_ctx<span class="ansi-blue-fg">.</span>control_status_ctx<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">.</span>status <span class="ansi-blue-fg">==</span> ag_ctx<span class="ansi-blue-fg">.</span>Status<span class="ansi-blue-fg">.</span>DISABLED<span class="ansi-blue-fg">:</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/autograph/impl/api.py</span> in <span class="ansi-cyan-fg">_call_unconverted</span><span class="ansi-blue-fg">(f, args, kwargs, options, update_cache)</span>
-<span class="ansi-green-intense-fg ansi-bold">    476</span> 
-<span class="ansi-green-intense-fg ansi-bold">    477</span>   <span class="ansi-green-fg">if</span> kwargs <span class="ansi-green-fg">is</span> <span class="ansi-green-fg">not</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 478</span><span class="ansi-red-fg">     </span><span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    479</span>   <span class="ansi-green-fg">return</span> f<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    480</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/keras/metrics.py</span> in <span class="ansi-cyan-fg">update_state</span><span class="ansi-blue-fg">(self, values, sample_weight)</span>
-<span class="ansi-green-intense-fg ansi-bold">    375</span>       values <span class="ansi-blue-fg">=</span> math_ops<span class="ansi-blue-fg">.</span>multiply<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">,</span> sample_weight<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    376</span> 
-<span class="ansi-green-fg">--&gt; 377</span><span class="ansi-red-fg">     </span>value_sum <span class="ansi-blue-fg">=</span> math_ops<span class="ansi-blue-fg">.</span>reduce_sum<span class="ansi-blue-fg">(</span>values<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    378</span>     <span class="ansi-green-fg">with</span> ops<span class="ansi-blue-fg">.</span>control_dependencies<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">[</span>value_sum<span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    379</span>       update_total_op <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>total<span class="ansi-blue-fg">.</span>assign_add<span class="ansi-blue-fg">(</span>value_sum<span class="ansi-blue-fg">)</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/util/dispatch.py</span> in <span class="ansi-cyan-fg">wrapper</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
-<span class="ansi-green-intense-fg ansi-bold">    199</span>     <span class="ansi-blue-fg">"""Call target, and fall back on dispatchers if there is a TypeError."""</span>
-<span class="ansi-green-intense-fg ansi-bold">    200</span>     <span class="ansi-green-fg">try</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 201</span><span class="ansi-red-fg">       </span><span class="ansi-green-fg">return</span> target<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">*</span>args<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">**</span>kwargs<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    202</span>     <span class="ansi-green-fg">except</span> <span class="ansi-blue-fg">(</span>TypeError<span class="ansi-blue-fg">,</span> ValueError<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">    203</span>       <span class="ansi-red-fg"># Note: convert_to_eager_tensor currently raises a ValueError, not a</span>
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/math_ops.py</span> in <span class="ansi-cyan-fg">reduce_sum</span><span class="ansi-blue-fg">(input_tensor, axis, keepdims, name)</span>
-<span class="ansi-green-intense-fg ansi-bold">   2042</span> 
-<span class="ansi-green-intense-fg ansi-bold">   2043</span>   return reduce_sum_with_dims(input_tensor, axis, keepdims, name,
-<span class="ansi-green-fg">-&gt; 2044</span><span class="ansi-red-fg">                               _ReductionDims(input_tensor, axis))
-</span><span class="ansi-green-intense-fg ansi-bold">   2045</span> 
-<span class="ansi-green-intense-fg ansi-bold">   2046</span> 
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/ops/math_ops.py</span> in <span class="ansi-cyan-fg">_ReductionDims</span><span class="ansi-blue-fg">(x, axis)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1896</span>     x_rank <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">None</span>
-<span class="ansi-green-intense-fg ansi-bold">   1897</span>     <span class="ansi-green-fg">if</span> isinstance<span class="ansi-blue-fg">(</span>x<span class="ansi-blue-fg">,</span> ops<span class="ansi-blue-fg">.</span>Tensor<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">-&gt; 1898</span><span class="ansi-red-fg">       </span>x_rank <span class="ansi-blue-fg">=</span> x<span class="ansi-blue-fg">.</span>shape<span class="ansi-blue-fg">.</span>rank
-<span class="ansi-green-intense-fg ansi-bold">   1899</span>     elif (isinstance(x, sparse_tensor.SparseTensor) and
-<span class="ansi-green-intense-fg ansi-bold">   1900</span>           x.dense_shape.shape.is_fully_defined()):
-
-<span class="ansi-green-fg">/usr/local/lib/python3.6/dist-packages/tensorflow/python/framework/ops.py</span> in <span class="ansi-cyan-fg">shape</span><span class="ansi-blue-fg">(self)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1173</span>         <span class="ansi-red-fg"># `_tensor_shape` is declared and defined in the definition of</span>
-<span class="ansi-green-intense-fg ansi-bold">   1174</span>         <span class="ansi-red-fg"># `EagerTensor`, in C.</span>
-<span class="ansi-green-fg">-&gt; 1175</span><span class="ansi-red-fg">         </span>self<span class="ansi-blue-fg">.</span>_tensor_shape <span class="ansi-blue-fg">=</span> tensor_shape<span class="ansi-blue-fg">.</span>TensorShape<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>_shape_tuple<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">   1176</span>       <span class="ansi-green-fg">except</span> core<span class="ansi-blue-fg">.</span>_NotOkStatusException <span class="ansi-green-fg">as</span> e<span class="ansi-blue-fg">:</span>
-<span class="ansi-green-intense-fg ansi-bold">   1177</span>         six<span class="ansi-blue-fg">.</span>raise_from<span class="ansi-blue-fg">(</span>core<span class="ansi-blue-fg">.</span>_status_to_exception<span class="ansi-blue-fg">(</span>e<span class="ansi-blue-fg">.</span>code<span class="ansi-blue-fg">,</span> e<span class="ansi-blue-fg">.</span>message<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span> <span class="ansi-green-fg">None</span><span class="ansi-blue-fg">)</span>
-
-<span class="ansi-red-fg">KeyboardInterrupt</span>: </pre>
+258/258 [===============] - 88s 334ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 87s 333ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 88s 335ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+258/258 [===============] - 88s 334ms/step - train_loss: nan - train_acc: 0.0213 - valid_loss: nan - valid_acc: 0.0213
+</pre>
 </div>
 </div>
 
