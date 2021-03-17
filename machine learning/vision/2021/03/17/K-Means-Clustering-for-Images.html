@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>K-Means Clustering for Images | AUSTIN CAN HELP</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="K-Means Clustering for Images" />
+<meta name="author" content="Austin Chen" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In this post, we will use a K-means algorithm to perform image classification. Clustering isn’t limited to the consumer information and population sciences, it can be used for imagery analysis as well. Leveraging Scikit-learn and the MNIST dataset, we will investigate the use of K-means clustering for computer vision." />
+<meta property="og:description" content="In this post, we will use a K-means algorithm to perform image classification. Clustering isn’t limited to the consumer information and population sciences, it can be used for imagery analysis as well. Leveraging Scikit-learn and the MNIST dataset, we will investigate the use of K-means clustering for computer vision." />
+<link rel="canonical" href="https://austinyhc.github.io/blog/machine%20learning/vision/2021/03/17/K-Means-Clustering-for-Images.html" />
+<meta property="og:url" content="https://austinyhc.github.io/blog/machine%20learning/vision/2021/03/17/K-Means-Clustering-for-Images.html" />
+<meta property="og:site_name" content="AUSTIN CAN HELP" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-03-17T00:00:00-05:00" />
+<script type="application/ld+json">
+{"url":"https://austinyhc.github.io/blog/machine%20learning/vision/2021/03/17/K-Means-Clustering-for-Images.html","@type":"BlogPosting","headline":"K-Means Clustering for Images","dateModified":"2021-03-17T00:00:00-05:00","datePublished":"2021-03-17T00:00:00-05:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://austinyhc.github.io/blog/machine%20learning/vision/2021/03/17/K-Means-Clustering-for-Images.html"},"author":{"@type":"Person","name":"Austin Chen"},"description":"In this post, we will use a K-means algorithm to perform image classification. Clustering isn’t limited to the consumer information and population sciences, it can be used for imagery analysis as well. Leveraging Scikit-learn and the MNIST dataset, we will investigate the use of K-means clustering for computer vision.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/blog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://austinyhc.github.io/blog/feed.xml" title="AUSTIN CAN HELP" /><link rel="shortcut icon" type="image/x-icon" href="/blog/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.css" integrity="sha512-h7nl+xz8wgDlNM4NqKEM4F1NkIRS17M9+uJwIGwuo8vGqIl4BhuCKdxjWEINm+xyrUjNCnK5dCrhM0sj+wTIXw==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/katex.min.js" integrity="sha512-/CMIhXiDA3m2c9kzRyd97MTb3MC6OVnx4TElQ7fkkoRghwDf6gi41gaT1PwF270W6+J60uTmwgeRpNpJdRV6sg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.12.0/contrib/auto-render.min.js" integrity="sha512-Do7uJAaHZm5OLrIv/yN4w0iG1dbu01kzdMNnFfu/mAqgUk6Nniv2JYHcwH+cNwjqgLcqcuBBk+JRvprLVI8azg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha512-0doc9hKxR3PYwso42RD1p5ySZpzzuDiOwMrdCEh2WdJZCjcmFKc/wEnL+z8fBQrnHoiNWbo+3fiGkOYXBdQp4A==" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/blog/">AUSTIN CAN HELP</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/blog/about/">About Me</a><a class="page-link" href="/blog/search/">Search</a><a class="page-link" href="/blog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">K-Means Clustering for Images</h1><p class="page-description">In this post, we will use a K-means algorithm to perform image classification. Clustering isn't limited to the consumer information and population sciences, it can be used for imagery analysis as well. Leveraging Scikit-learn and the MNIST dataset, we will investigate the use of K-means clustering for computer vision.</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2021-03-17T00:00:00-05:00" itemprop="datePublished">
+        Mar 17, 2021
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Austin Chen</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      4 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/blog/categories/#machine learning">machine learning</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/blog/categories/#vision">vision</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/austinyhc/blog/tree/master/_notebooks/2021-03-17-K-Means-Clustering-for-Images.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/blog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/austinyhc/blog/blob/master/_notebooks/2021-03-17-K-Means-Clustering-for-Images.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/blog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#1%-Better-Everyday">1% Better Everyday </a></li>
+<li class="toc-entry toc-h2"><a href="#Load-Datasets">Load Datasets </a></li>
+<li class="toc-entry toc-h2"><a href="#Preprocessing">Preprocessing </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Reshape">Reshape </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Applying-K-means-Clustering">Applying K-means Clustering </a></li>
+<li class="toc-entry toc-h2"><a href="#Evaluating-Clustering">Evaluating Clustering </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2021-03-17-K-Means-Clustering-for-Images.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="1%-Better-Everyday">
+<a class="anchor" href="#1%-Better-Everyday" aria-hidden="true"><span class="octicon octicon-link"></span></a>1% Better Everyday<a class="anchor-link" href="#1%-Better-Everyday"> </a>
+</h2>
+<ul>
+<li><a href="https://goodboychan.github.io/python/machine_learning/natural_language_processing/vision/2020/10/26/01-K-Means-Clustering-for-Imagery-Analysis.html">K-Means Clustering for Imagery Analysis</a></li>
+<li>Debug why the accuray looks abnormal. Suspecting that something I did not add in the <code>get_label2cluster()</code>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Load-Datasets">
+<a class="anchor" href="#Load-Datasets" aria-hidden="true"><span class="octicon octicon-link"></span></a>Load Datasets<a class="anchor-link" href="#Load-Datasets"> </a>
+</h2>
+<p>To be quick, I will load the Fashion MNIST from TensorFlow Keras library, which is often used as the "Hello World" of machine learning programs for computer vision.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#(train_x, train_y), (test_x, test_y) = fashion_mnist.load_data()</span>
+
+<span class="n">mnist</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mnist</span>
+<span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">),</span> <span class="p">(</span><span class="n">test_x</span><span class="p">,</span> <span class="n">test_y</span><span class="p">)</span> <span class="o">=</span> <span class="n">mnist</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz
+11493376/11490434 [==============================] - 0s 0us/step
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">CLASSES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'T-shirt/top'</span><span class="p">,</span> <span class="s1">'Trouser'</span><span class="p">,</span> <span class="s1">'Pullover'</span><span class="p">,</span> <span class="s1">'Dress'</span><span class="p">,</span> <span class="s1">'Coat'</span><span class="p">,</span>
+               <span class="s1">'Sandal'</span><span class="p">,</span> <span class="s1">'Shirt'</span><span class="p">,</span> <span class="s1">'Sneaker'</span><span class="p">,</span> <span class="s1">'Bag'</span><span class="p">,</span> <span class="s1">'Ankle boot'</span><span class="p">]</span>
+<span class="n">NCLASSES</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">CLASSES</span><span class="p">)</span>
+<span class="n">class2label</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">CLASSES</span><span class="p">)}</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Training: </span><span class="si">{</span><span class="n">train_x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Test: </span><span class="si">{</span><span class="n">test_x</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training: (60000, 28, 28)
+Test: (10000, 28, 28)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>AS you can see, the dataset contains images of 28x28x1. Let's print some out and see what they look like.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span><span class="p">,</span><span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">gray</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axs</span><span class="o">.</span><span class="n">flat</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">train_x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">'off'</span><span class="p">)</span>
+    <span class="c1">#ax.set_title(f'{class2label[train_y[i]]}')</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">train_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqYAAAKqCAYAAADouZzkAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAADh0RVh0U29mdHdhcmUAbWF0cGxvdGxpYiB2ZXJzaW9uMy4yLjIsIGh0dHA6Ly9tYXRwbG90bGliLm9yZy+WH4yJAAAgAElEQVR4nO3cebCedXk//s8nJIQ1AZSy1IGwr4YIIkL5EVoCKCKyVJayCFVgoGz+CsVqtFA2F/RXFgEVAUWmaIskYGGAmrDINlCK34EYNmsgEEhEQkIIiXDu3x/wnSI+1+M5zzk5z3VyXq+ZzMjnPff9XAL3Oe/c4Vy1aZoCAADdNqLbAwAAQCmKKQAASSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgmVGu9s9b6Rq31tXd+PdHtmYDWaq1r1VpvrLUuqrXOqrX+TbdnAv60Wutm73yv/VG3Z+F/KaZ5ndQ0zWrv/Nqi28MAoW+XUpaWUtYppRxeSrm81rpNd0cCeuHbpZSHuj0Ef0gxBehQrXXVUspBpZQvN03zWtM0vyil3FRKObK7kwHt1FoPLaXML6X8vNuz8IcU07wuqLX+ttZ6b611924PA7S0eSnlzaZpnnzX2S9LKd6YQlK11jGllH8upfy/3Z6FP6aY5nRmKWXjUsqfl1K+W0q5uda6SXdHAlpYrZSy4D1nr5ZSVu/CLEDvnFNK+X7TNLO7PQh/TDFNqGmaB5umWdg0zZKmaX5QSrm3lLJPt+cC/shrpZQx7zkbU0pZ2IVZgD+h1jqhlDKplPL/dXsWWhvZ7QHolaaUUrs9BPBHniyljKy1btY0zVPvnG1XSnm8izMBsd1LKeNKKc/WWkt5+089Vqi1bt00zfZdnIt31KZpuj0D71JrXaOUslMp5a5SypullEPK23+c/6H3/HdsQAK11uvL2795/FwpZUIp5ZZSyi5N0yinkEytdZXyh3/KcXp5u6ie0DTNvK4MxR/wxjSfUaWUc0spW5ZS3iqlzCyl7K+UQlonllKuKqXMLaW8XN7+BqeUQkJN07xeSnn9//51rfW1UsobSmke3pgCAJCCH34CACAFxRQAgBQUUwAAUlBMAQBIoe1P5dda/WQUw1bTNENud6xnluFsqD2znleGs+h59cYUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFIY2e0BAIaDHXbYIcxOOumkMDvqqKNanv/whz8Mr7nkkkvC7JFHHgkzgG7zxhQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBQUUwAAUqhN08RhrXFIr62wwgphNnbs2AH/vHarZ1ZZZZWW51tssUV4zd/93d+F2YUXXhhmhx12WJi98cYbYfbVr341zM4+++wwG2hN09RB+7AB4pntrgkTJoTZtGnTwmzMmDEDOserr74aZu973/sG9LMyGWrPrOeVP2WPPfYIs+uuuy7MJk6cGGZPPPFEv2YaKNHz6o0pAAApKKYAAKSgmAIAkIJiCgBACoopAAApKKYAAKQwstsDdMsGG2wQZiuuuGKY7bLLLi3Pd9111/CaNdZYI8wOOuigMBtMs2fPDrOLL744zA444IAwW7hwYZj98pe/DLO77rorzKDbPvKRj4TZDTfcEGbtVsO1W9sXPUdLly4Nr2m3EuqjH/1omD3yyCNh1u7zyG+33XYLs3b/vtx4443LYhx6accddwyzhx56aBAnGTzemAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJiCgBACsv1uqgJEyaE2bRp08Ks3VqXoa6np6fl+eTJk8NrXnvttTC77rrrwmzOnDlh9sorr4TZE088EWYwUFZZZZUw23777cPsRz/6UZitt956/Zqplaeeeqrl+de//vXwmuuvvz7M7r333jBr93XgggsuCDPy23333cNss802CzPropa9ESPid4QbbbRRmG244YZhVmvt10zd5I0pAAApKKYAAKSgmAIAkIJiCgBACoopAAApKKYAAKSwXK+LevbZZ8Ps5ZdfDrMs66IefPDBMJs/f36Y/eVf/mWYLV26tOX5tdde2/vBYDnwne98J8wOO+ywQZykvWh11WqrrRZec9ddd4VZu7VB48eP7/VcDC1HHXVUmN1///2DOAnv1W7N3LHHHhtm7VbXzZw5s18zdZM3pgAApKCYAgCQgmIKAEAKiikAACkopgAApKCYAgCQwnK9Lup3v/tdmJ1xxhlhtu+++4bZf//3f7c8v/jii3s/2Ls8+uijYbbnnnuG2aJFi8Jsm222CbNTTz21d4PBcmKHHXZoef6JT3wivKbW2tFntVvTdPPNN4fZhRdeGGYvvPBCy/Poa1Eppbzyyith9ld/9Vdh1un/b/IbMcJ7qKyuvPLKjq576qmnBniSHPybCgBACoopAAApKKYAAKSgmAIAkIJiCgBACoopAAApLNfrotqZMmVKmE2bNi3MFi5c2PJ8u+22C6/57Gc/G2bt1sS0WwnVzuOPPx5mxx13XEf3hMwmTJgQZnfccUfL8zFjxoTXNE0TZrfeemuYHXbYYWE2ceLEMJs8eXKYRatk5s2bF17zy1/+Msx6enrCrN0Kre233z7MHnnkkTBjcI0fP77l+TrrrDPIk9BbY8eO7ei66GvbUOeNKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKQzbn8pvZ8GCBX2+5tVXX+3os4499tgw+/GPfxxm7X6yFpZHm2++eZidccYZYRb9xOtvf/vb8Jo5c+aE2Q9+8IMwe+2118LsP/7jPzrKBtPKK68cZn//938fZocffviyGIcO7LPPPi3P2/2zZdlrtxVho4026uiezz//fKfjpOaNKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkYF3UADnrrLPCbIcddgiziRMnhtmkSZPC7Pbbb+/VXDCUjB49OswuvPDCMItW5JRSysKFC1ueH3XUUeE1Dz/8cJgN17U7G2ywQbdHoBe22GKLPl/z+OOPL4NJeLd2X7/arZJ68sknwyz62jbUeWMKAEAKiikAACkopgAApKCYAgCQgmIKAEAKiikAAClYFzVAFi1aFGbHHntsmD3yyCNh9r3vfS/Mpk+fHmbtVt18+9vfbnneNE14DQyWD33oQ2HWbiVUO5/61Kdant91110d3Q+WNw899FC3R0hnzJgxYfaxj30szI444oiW53vttVdHc5xzzjlhNn/+/I7umZ03pgAApKCYAgCQgmIKAEAKiikAACkopgAApKCYAgCQgnVRg+CZZ54Js6OPPjrMrr766jA78sgjO8pWXXXVluc//OEPw2vmzJkTZjCQvvWtb4VZrTXM2q1+shbqD40YEb+P6OnpGcRJyGKttdYa1M/bbrvtwix6zidNmhRe84EPfCDMVlxxxTA7/PDDw6zdc7J48eIwe/DBB1ueL1myJLxm5Mi4iv3Xf/1XmC2vvDEFACAFxRQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBSsi+qyG2+8McyeeuqpMGu3VmePPfYIs/PPP7/l+YYbbhhec95554XZ888/H2bQyr777htmEyZMCLOmacLspptu6tdMw0m7lVDt/h4/+uijy2IcBli0yqjdP9srrrgizL74xS/2e6b3Gj9+fJhF66LefPPN8JrXX389zGbMmBFmV111VZg9/PDDYdZuBd1LL73U8nz27NnhNSuvvHKYzZw5M8yWV96YAgCQgmIKAEAKiikAACkopgAApKCYAgCQgmIKAEAK1kUl9thjj4XZwQcfHGaf/OQnw+zqq69ueX788ceH12y22WZhtueee4YZtNJuNcqKK64YZnPnzg2zH//4x/2aaSgaPXp0mJ111lkd3XPatGlh9o//+I8d3ZPBdeKJJ7Y8nzVrVnjNLrvssqzGaenZZ58NsylTprQ8/9WvfhVe88ADD/R7poFy3HHHtTxfe+21w2t+/etfL6txhiRvTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBeuihqj58+eH2bXXXhtmV155ZcvzkSPjfxV22223MNt9993D7M477wwz6KslS5aE2Zw5cwZxksEVrYWaPHlyeM0ZZ5wRZrNnzw6zb37zm2H22muvhRn5fe1rX+v2CMPCHnvs0edrbrjhhmUwydDljSkAACkopgAApKCYAgCQgmIKAEAKiikAACn4qfzExo8fH2Z//dd/HWY77rhjmLX76fvIjBkzwuzuu+/u8/2gEzfddFO3R1hmJkyYEGbRT9gfcsgh4TVTp04Ns4MOOqj3gwHL3I033tjtEVLxxhQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBQUUwAAUrAuahBsscUWYXbSSSeF2YEHHhhm6667br9meq+33norzObMmRNmPT09AzoHy79aa0fZ/vvvH2annnpqv2YaDJ///OfD7Mtf/nKYjR07tuX5ddddF15z1FFH9X4wgES8MQUAIAXFFACAFBRTAABSUEwBAEhBMQUAIAXFFACAFKyL6qNoTdNhhx0WXtNuJdS4ceP6O1KfPPzwwy3PzzvvvPCam266aVmNwzDUNE1HWbsVaRdffHGYXXXVVS3PX3755fCaj370o2F25JFHhtl2220XZh/4wAfC7Nlnnw2z2267reX5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p5/e8vyFF14Ir9l1113D7Ec/+lGYPfjgg70fDAbRlltuGWannXZamB1++OFhtvLKK4dZrTXMnnvuuTBbuHBhy/OtttoqvObggw8Os8suuyzMZs6cGWZDmTemAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCdVHLoUmTJoXZySef3Of7tVtJse+++4bZSy+91OfPgsFyyCGHhNlFF10UZu9///vDrN2KmTvvvDPM1l577TD7xje+EWadzNHusw499NA+fxb01dixY8Psa1/7Wsvzds/r6quv3u+Z3uupp54Ks7333jvMRo0a1fK83ffRdl9T2mXLK29MAQBIQTEFACAFxRQAgBQUUwAAUlBMAQBIQTEFACAF66KGqF133TXMrr766jBrt6Yj0m5dzaxZs/p8PxhoI0fGX8o+/OEPtzz/3ve+F16zyiqrhNndd98dZuecc06Y/eIXvwiz0aNHh9lPfvKTlud77bVXeE07Dz/8cEfXwUA54IADwuxzn/vcoM3xzDPPhNmee+4ZZs8991yYbbrppv2aCW9MAQBIQjEFACAFxRQAgBQUUwAAUlBMAQBIQTEFACAF66KGqM985jNhtv766/f5fnfeeWeY/fCHP+zz/WAwHXHEEWF25ZVX9vl+d9xxR5gdcsghYbZgwYI+f9afumcna6Fmz54dZj/4wQ/6fD8YSJ/+9KcH9H6/+c1vwuyhhx4KszPPPDPM2q2Eamerrbbq6Dr+lzemAACkoJgCAJCCYgoAQAqKKQAAKSimAACk4KfyE3v/+98fZn/7t38bZj09PWE2f/78lufnnntu7weDLjjnnHPC7Itf/GKYNU3T8vyyyy4Lr5k8eXKYdfqT9+186UtfGtD7nXLKKWE2b968Af0s6Ktjjz02zI477riW57fffnt4zdNPPx1mc+fO7f1gA2CdddYZ1M9bHnljCgBACoopAAApKKYAAKSgmAIAkIJiCgBACoopAAApWBfVZePGjQuzG264YcA/75JLLml5Pn369AH/LOirr3zlK2HWbiXU0qVLw+y2225reX7mmWeG1yxevDjM2llppZXCbK+99gqzDTbYIMxqrS3P2614mzp1aphBt73wwgthdtZZZw3eIMvAzjvv3O0RhjxvTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBeuiuuxjH/tYmI0fP76je/785z8Ps4suuqije8JAWWONNcLsxBNPDLOmacIsWglVSin7779/7wbrpU033TTMrrvuujDbYYcdOvq8f//3f295/vWvf72j+8Fwcsopp4TZqquuOuCf98EPfrDP19x3331hdv/99/dnnCHJG1MAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASKG2W8FSa41Deq3dupprrrkmzNqtsmi3XuLggw8Os5deeinM+ENN09Ruz9BXQ+GZ/bM/+7Mwe+GFFzq658Ybbxxmb7zxRsvzY445Jrxmv/32C7Ntt902zFZbbbUwa/e1tl124IEHtjy/+eabw2uGq6H2zA6F53WwrbLKKi3Pt9566/Caf/qnfwqzffbZp6M5RoyI39v19PT0+X7tvrbtvvvuYfbMM8/0+bOGiuh59cYUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFIY2e0Blhfjxo0LsxtuuGHAP+/Xv/51mFkJRWZLly4Ns3nz5oXZ2muvHWb/8z//E2btVjF1ot3alwULFoTZeuutF2a//e1vw8xaKIaiUaNGhdmHPvShMIu+X7Z7fhYvXhxm7Z7X+++/P8w+9rGPhVm00qqdkSPjuhWthCullIsuuijM2n0tHcq8MQUAIAXFFACAFBRTAABSUEwBAEhBMQUAIAXFFACAFKyLGiBnnnlmmPX09Az45331q18d8HvCYJg/f36Y7b///mH2s5/9LMzWWmutMHvmmWdank+dOjW85pprrgmz3/3ud2F2/fXXh1m7dTftroOsVlxxxTBrt27ppz/9aZ8/6+yzzw6zadOmhdm9994bZu2+brS757bbbhtmkXbr7i644IIwe/bZZ8NsypQpYbZkyZLeDZaQN6YAAKSgmAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJ1UX00YcKElud77bXXgH9Wu3U2TzzxxIB/HnTbgw8+GGbt1q0Mpt122y3MJk6cGGbt1sb9+te/7tdMsKyMGjUqzNqtcDrjjDM6+rxbb7215fkll1wSXtNuBV27rxu33HJLmH3wgx8Ms6VLl4bZ17/+9Zbn7VZMfepTnwqz6667Lsz+8z//M8y+9rWvhdkrr7wSZpFHH320z9d0yhtTAABSUEwBAEhBMQUAIAXFFACAFBRTAABSqE3TxGGtcThMzZ07t+X5mmuu2dH9HnjggTD7+Mc/HmavvfZaR59H7zVNU7s9Q195Zpe9vffeO8za/ZRvu6+16623XpjNmzevd4Mx5J7ZLM/rCiusEGbnnXdemJ1++ulhtmjRojD7whe+EGbXX399y/N2P0n+4Q9/OMwuvfTSjq57+umnw+yEE04Is+nTp7c8HzNmTHjNLrvsEmaHH354mO23335htuqqq4ZZO88991zL84022qij+7UTPa/emAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJiCgBACtZF9dFbb73V8rynp6ej+x111FFh9q//+q8d3ZOBMdRWz5Time226OtDKdZFDYah9sxmeV7brT+65JJLwuz1118Ps+OOOy7Mbr/99jDbaaedWp4fc8wx4TXtViuuvPLKYfbP//zPYXb11VeHWbRSabAddthhYfY3f/M3Hd3z85//fMvzduuzOmVdFAAAqSmmAACkoJgCAJCCYgoAQAqKKQAAKSimAACkYF1UC+3WRBx99NEtzztdF7XxxhuH2axZszq6JwNjqK2eKWX4PrODae+99w6zW265Jcysi1r2htozm+V5nTNnTpitvfbaYbZkyZIwmzlzZpituuqqYbbpppuGWSfOOuusMLvgggvCrN3qNwaGdVEAAKSmmAIAkIJiCgBACoopAAApKKYAAKSgmAIAkMLIbg/QLRMmTAizSZMmhVm0Fmrp0qXhNd/+9rfD7KWXXgozIJ92K95gKHrxxRfDrN26qNGjR4fZdttt19Es0cq1u+++O7xmypQpYfab3/wmzKyEyskbUwAAUlBMAQBIQTEFACAFxRQAgBQUUwAAUlBMAQBIYdiui1pjjTXCbN111+3z/Z5//vkwO/300/t8PyCne+65J8xGjIh/rx+tmoNu22233cJs//33D7Ptt98+zObOnRtmV111VZi98sorLc/brWRk+eKNKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkMGzXRQF04rHHHguzp556Ksw23njjMNtkk03CbN68eb0bDDq0cOHCMLv22ms7yqBT3pgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQArDdl3UzJkzw+y+++4Ls1133XVZjAMsB84///wwu/LKK8PsvPPOC7OTTz655fmMGTN6PxjAEOGNKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKdSmaeKw1jiE5VzTNLXbM/SVZ7a7xowZE2Y/+clPwmzSpElh9tOf/rTl+THHHBNes2jRojBbng21Z9bzynAWPa/emAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJiCgBACtZFQWCorZ4pxTObWbtVUuedd16YnXDCCS3Px48fH14zY8aM3g+2HBlqz6znleHMuigAAFJTTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASMG6KAgMtdUzpXhmGd6G2jPreWU4sy4KAIDUFFMAAFJQTAEASEExBQAgBcUUAIAUFFMAAFJouy4KAAAGizemAACkoJgCAJCCYgoAQF9UfNwAAAwtSURBVAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKaUK11pNqrQ/XWpfUWq/p9jxAe7XWH9Va59RaF9Ran6y1fq7bMwF/zPfX/GrTNN2egfeotR5YSukppexdSlm5aZqjuzsR0E6tdZtSytNN0yyptW5ZSrmzlPKJpmn+q7uTAe/m+2t+3pgm1DTNT5ummVJKebnbswB/WtM0jzdNs+T//uU7vzbp4khAC76/5qeYAgyAWutltdbXSykzSylzSim3dHkkgCFHMQUYAE3TnFhKWb2U8v+UUn5aSlnS/goA3ksxBRggTdO81TTNL0opHyilnNDteQCGGsUUYOCNLP4bU4A+U0wTqrWOrLWuVEpZoZSyQq11pVrryG7PBfyxWuuf1VoPrbWuVmtdoda6dynlsFLKz7s9G/CHfH/NTzHNaXIpZXEp5QullCPe+d+TuzoREGnK239sP7uU8kop5cJSymlN09zU1amAVnx/Tc4eUwAAUvDGFACAFBRTAABSUEwBAEhBMQUAIIW2KxJqrX4yimGraZra7Rn6yjPLcDbUnlnPK8NZ9Lx6YwoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKYzs9gDDwUUXXRRmp5xySpg99thjYbbvvvuG2axZs3o3GABAIt6YAgCQgmIKAEAKiikAACkopgAApKCYAgCQgmIKAEAK1kUNkHHjxoXZEUccEWY9PT1httVWW4XZlltuGWbWRcGftvnmm4fZqFGjwmy33XYLs8suuyzM2j3rg2nq1Klhduihh4bZ0qVLl8U40G/tntdddtklzM4///ww+4u/+It+zUTnvDEFACAFxRQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBSsixog8+bNC7O77747zPbbb79lMQ4MK9tss02YHX300S3PP/3pT4fXjBgR/559/fXXD7N2K6GapgmzwdTua84VV1wRZqeddlqYLViwoF8zQX+MHTs2zKZPnx5mL774Ypitu+66HV1H/3ljCgBACoopAAApKKYAAKSgmAIAkIJiCgBACoopAAApWBc1QBYtWhRms2bNGsRJYPi54IILwmyfffYZxEmGtqOOOirMvv/974fZvffeuyzGgWWq3Uoo66K6xxtTAABSUEwBAEhBMQUAIAXFFACAFBRTAABSUEwBAEjBuqgBssYaa4TZdtttN4iTwPBzxx13hFkn66Lmzp0bZu3WJo0YEf9ev6enp89zlFLKLrvs0vJ84sSJHd0PeFuttdsj0II3pgAApKCYAgCQgmIKAEAKiikAACkopgAApKCYAgCQgnVRA2SVVVYJsw022GDAP2/HHXcMs5kzZ4bZrFmzBnwW6LbLL788zKZMmdLn+/3+978PsxdffLHP9+uPMWPGtDx/7LHHwmvWX3/9jj6r3d+rhx9+uKN7QlZN04TZSiutNIiT8G7emAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJiCgBACtZFDZAXXnghzK655powO+usszr6vHbXzZ8/P8wuvfTSjj4PMnvzzTfD7LnnnhvESQbe3nvv3fJ8zTXXHPDPmj17dpgtWbJkwD8Psvrwhz8cZg888MAgTjL8eGMKAEAKiikAACkopgAApKCYAgCQgmIKAEAKfip/EJxzzjlh1ulP5QPLj0MPPTTMjj322JbnK6+88oDP8ZWvfGXA7wnLWrutHK+++mqYjR07Nsw22WSTfs1E57wxBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBcUUAIAUrIvqshEj4t8b9PT0DOIkQH8dfvjhYfaFL3whzDbddNMwGzVqVL9meq9HH300zH7/+98P6GfBYJg/f36Y3XPPPWG27777Lotx6CdvTAEASEExBQAgBcUUAIAUFFMAAFJQTAEASEExBQAgBeuiuqzdSqimaQZxEhi6xo0bF2ZHHnlky/NJkyYN+By77rprmA3087xgwYIwa7ea6pZbbgmzxYsX92smgP7yxhQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBQUUwAAUrAuChgStt122zC76aabwmyDDTZYFuN03T333BNm3/3udwdxElj+vO997+v2CMOWN6YAAKSgmAIAkIJiCgBACoopAAApKKYAAKSgmAIAkIJ1UcCQV2vtKBtoI0bEv9fv6ekZ0M/ad999w+zjH/94mN16660DOgcsj/bbb79ujzBseWMKAEAKiikAACkopgAApKCYAgCQgmIKAEAKiikAAClYF9Vly2K9zG677RZml156aUf3hG577LHHwmz33XcPsyOOOKLl+W233RZe88Ybb/R6roHw2c9+NsxOPvnkQZwEli/Tp08Ps3Yr1+geb0wBAEhBMQUAIAXFFACAFBRTAABSUEwBAEhBMQUAIIXaNE0c1hqHDIi33norzNr9s+nU+PHjW57PmDFjwD9rqGuapnZ7hr7yzA5NY8eODbOXX365z/f75Cc/GWa33nprn+83VAy1Z9bzuuwddNBBYfZv//ZvYbZ48eIw23rrrcNs1qxZvRuM8Hn1xhQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBRGdnuA4e6KK64Is+OPP37AP++4445reX7aaacN+GcBvbP33nt3ewRYLr355psdXVdrvOBh9OjRnY5DL3hjCgBACoopAAApKKYAAKSgmAIAkIJiCgBACoopAAApWBfVZTNnzuz2CDCoRo0aFWZ77bVXmE2bNi3MFi9e3K+ZBsMxxxwTZhdddNEgTgLDx9SpU8Os3fffLbfcMszarVc88cQTezcYIW9MAQBIQTEFACAFxRQAgBQUUwAAUlBMAQBIQTEFACCF2jRNHNYahyxzTz75ZJhtsskmHd1zxIjWvxfZdNNNw2ueeeaZjj5rqGuapnZ7hr7K8szuuuuuYfalL30pzPbcc88w22ijjcLsueee691gA2CttdYKs3322SfMLrnkkjBbffXV+zxHuxVZ++23X5hNnz69z581VAy1ZzbL8zpc/cu//EuYtVvvts4664TZG2+80a+ZhpPoefXGFACAFBRTAABSUEwBAEhBMQUAIAXFFACAFBRTAABSGNntAYg9/vjjYbbxxht3dM+enp5Ox4Feu/TSS8Ns22237eie//AP/xBmCxcu7OienWi30mr77bcPs3ar+dq58847W55ffvnl4TXL80ooGAztntelS5cO4iTDjzemAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCdVGJffe73w2zT37yk4M4CXTfCSec0O0R+mXu3LlhdvPNN4fZqaee2vL8jTfe6PdMQGtjxowJs0996lNhduONNy6LcYYVb0wBAEhBMQUAIAXFFACAFBRTAABSUEwBAEhBMQUAIAXrohKbMWNGmP3qV78Ks6222mpZjAO9dvTRR4fZySefHGaf+cxnlsE0fffMM8+E2euvvx5m99xzT5i1W//22GOP9W4wYMAcfPDBYbZkyZIwa/f9l/7zxhQAgBQUUwAAUlBMAQBIQTEFACAFxRQAgBQUUwAAUqhN08RhrXEIy7mmaWq3Z+irofDMjh49OszarZk699xzw2zNNdcMsylTprQ8v+OOO8Jrpk6dGmYvvvhimNFdQ+2ZHQrP6/Ls+uuvD7N2axf322+/MJs1a1a/ZhpOoufVG1MAAFJQTAEASEExBQAgBcUUAIAUFFMAAFLwU/kQGGo/4VuKZ5bhbag9s55XhjM/lQ8AQGqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJCCYgoAQAqKKQAAKSimAACkoJgCAJBCbZqm2zMAAIA3pgAA5KCYAgCQgmIKAEAKiikAACkopgAApKCYAgCQwv8PPKHQabdiaMwAAAAASUVORK5CYII=%0A">
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Preprocessing">
+<a class="anchor" href="#Preprocessing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Preprocessing<a class="anchor-link" href="#Preprocessing"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Reshape">
+<a class="anchor" href="#Reshape" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reshape<a class="anchor-link" href="#Reshape"> </a>
+</h3>
+<p>Images are formated as 2-dimensional <code>numpy</code> arrays. However, the K-means clustering algorithm provided by scikit-learn ingests 1-dimensional arrays; as a result, we will need to reshape each image or precisely wee need to <code>flatten</code> the data.</p>
+<p>Clustering algorithms almost always use 1-dimensional data. For example, if you were clustering a set of X, Y coordinates, each point would be passed to the clustering algorithm as a 1-dimensional array with a length of two (example: [2,4] or [-1, 4]). If you were using 3-dimensional data, the array would have a length of 3 (example: [2, 4, 1] or [-1, 4, 5]).</p>
+<p>Fashion MNIST contains images that are 28 by 28 pixels; as a result, they will have a length of 784 once we reshape them into a 1-dimensional array.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_x</span> <span class="o">=</span> <span class="n">train_x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(60000, 784)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_x</span> <span class="o">=</span> <span class="n">train_x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Applying-K-means-Clustering">
+<a class="anchor" href="#Applying-K-means-Clustering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Applying K-means Clustering<a class="anchor-link" href="#Applying-K-means-Clustering"> </a>
+</h2>
+<p>Since the size of the MNIST dataset is quite large, we will use the <strong>mini-batch</strong> implementation of k-means clustering (<code>MiniBatchKMeans</code>) provided by scikit-learn. This will dramatically reduce the amount of time it takes to fit the algorithm to the data.</p>
+<p>Here, we just choose the <code>n_clusters</code> argument to the <code>n_digits</code>(the size of unique labels, in our case, 10), and set the default parameters in <code>MiniBatchKMeans</code>.</p>
+<p>And as you know that, K-means clustering is one of the unsupervised learning. That means it doesn't require any label to train.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">MiniBatchKMeans</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">kmeans</span> <span class="o">=</span> <span class="n">MiniBatchKMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">NCLASSES</span><span class="p">)</span>
+<span class="n">kmeans</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>MiniBatchKMeans(batch_size=100, compute_labels=True, init='k-means++',
+                init_size=None, max_iter=100, max_no_improvement=10,
+                n_clusters=10, n_init=3, random_state=None,
+                reassignment_ratio=0.01, tol=0.0, verbose=0)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>array([7, 2, 0, ..., 7, 1, 7], dtype=int32)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">NCLASSES</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>10</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="flash flash-warn">
+    <svg class="octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap octicon octicon-zap" viewbox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M10.561 1.5a.016.016 0 00-.01.004L3.286 8.571A.25.25 0 003.462 9H6.75a.75.75 0 01.694 1.034l-1.713 4.188 6.982-6.793A.25.25 0 0012.538 7H9.25a.75.75 0 01-.683-1.06l2.008-4.418.003-.006a.02.02 0 00-.004-.009.02.02 0 00-.006-.006L10.56 1.5zM9.504.43a1.516 1.516 0 012.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.25 1.25 0 01-.871.354h-.302a1.25 1.25 0 01-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.429z"></path></svg>
+    <strong>Important: </strong>These are not real label of each image. These are just group ids that the clustering models label for each input.
+</div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To match group ids with actual labels, we can tackle this with following steps:</p>
+<ul>
+<li>Combine each images in the same group</li>
+<li>Check frequency distribution of actual labels (using <code>np.bincount</code>)</li>
+<li>Find the most frequent label by <code>np.argmax</code> and set the label</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_label2cluster_mapper</span><span class="p">(</span><span class="n">kmeans</span><span class="p">,</span> <span class="n">ground_trues</span><span class="p">):</span>
+
+    <span class="n">label2cluster</span><span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kmeans</span><span class="o">.</span><span class="n">n_clusters</span><span class="p">):</span>
+        <span class="n">indeces</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">kmeans</span><span class="o">.</span><span class="n">labels_</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">ground_trues</span><span class="p">[</span><span class="n">indeces</span><span class="p">]</span>
+
+        <span class="n">hist</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">labels</span><span class="p">)))</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span> <span class="ow">in</span> <span class="n">label2cluster</span><span class="p">:</span>
+            <span class="n">label2cluster</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">hist</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label2cluster</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">hist</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">label2cluster</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">convert_cluster_to_label</span><span class="p">(</span><span class="n">clusters</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">clusters</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">cl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">clusters</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span> <span class="n">preds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="k">return</span> <span class="n">preds</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">label2cluster</span> <span class="o">=</span> <span class="n">get_label2cluster_mapper</span><span class="p">(</span><span class="n">kmeans</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+<span class="n">train_cl</span> <span class="o">=</span> <span class="n">kmeans</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">convert_cluster_to_label</span><span class="p">(</span><span class="n">train_cl</span><span class="p">,</span> <span class="n">label2cluster</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">preds</span><span class="p">[:</span><span class="mi">20</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train_y</span><span class="p">[:</span><span class="mi">20</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[8 0 4 1 7 8 1 8 1 7 3 1 3 6 1 7 2 8 6 1]
+[5 0 4 1 9 2 1 3 1 4 3 5 3 6 1 7 2 8 6 9]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Accuracy : </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">preds</span> <span class="o">==</span> <span class="n">train_y</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Accuracy : 56.015%
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As a result, some predicted label is mismatched, but in general k-means clustering does an acceptable jobs of predicting labels.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Evaluating-Clustering">
+<a class="anchor" href="#Evaluating-Clustering" aria-hidden="true"><span class="octicon octicon-link"></span></a>Evaluating Clustering<a class="anchor-link" href="#Evaluating-Clustering"> </a>
+</h2>
+<p>With the functions defined above, we can now determine the accuracy of our algorithms. Since we are using this clustering algorithm for classification, accuracy is ultimately the most important metric; however, there are other metrics out there that can be applied directly to the clusters themselves, regardless of the associated labels. Two of these metrics that we will use are <strong>inertia</strong> and <strong>homogeneity</strong>. (See the detailed description of <a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html">homogeneity_score</a>)</p>
+<p>Furthermore, earlier we made the assumption that K = 10 was the appropriate number of clusters; however, this might not be the case. Let's fit the K-means clustering algorithm with several different values of K, than evaluate the performance using our metrics.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">homogeneity_score</span>
+
+<span class="k">def</span> <span class="nf">calc_metrics</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Number of Clusters: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">n_clusters</span><span class="p">))</span>
+    <span class="c1"># Inertia</span>
+    <span class="n">inertia</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">inertia_</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Inertia: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inertia</span><span class="p">))</span>
+    <span class="c1"># Homogeneity Score</span>
+    <span class="n">homogeneity</span> <span class="o">=</span> <span class="n">homogeneity_score</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">estimator</span><span class="o">.</span><span class="n">labels_</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Homogeneity score: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">homogeneity</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">inertia</span><span class="p">,</span> <span class="n">homogeneity</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+
+<span class="n">clusters</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">144</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+<span class="n">iner_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">homo_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">acc_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">n_clusters</span> <span class="ow">in</span> <span class="n">clusters</span><span class="p">:</span>
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">MiniBatchKMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">)</span>
+    <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span>
+    
+    <span class="n">inertia</span><span class="p">,</span> <span class="n">homo</span> <span class="o">=</span> <span class="n">calc_metrics</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+    <span class="n">iner_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inertia</span><span class="p">)</span>
+    <span class="n">homo_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">homo</span><span class="p">)</span>
+    
+    <span class="c1"># Determine predicted labels</span>
+    <span class="n">labels2cluster</span> <span class="o">=</span> <span class="n">get_label2cluster_mapper</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="n">convert_cluster_to_label</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">labels_</span><span class="p">,</span> <span class="n">label2cluster</span><span class="p">)</span>
+    
+    <span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">train_y</span><span class="p">,</span> <span class="n">preds</span><span class="p">)</span>
+    <span class="n">acc_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Accuracy: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">acc</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Number of Clusters: 10
+Inertia: 2374295.5
+Homogeneity score: 0.47531735445630136
+Accuracy: 0.058133333333333335
+
+Number of Clusters: 16
+Inertia: 2233699.5
+Homogeneity score: 0.5342048472152641
+Accuracy: 0.13905
+
+Number of Clusters: 36
+Inertia: 1958344.25
+Homogeneity score: 0.6801597667242121
+Accuracy: 0.1241
+
+Number of Clusters: 64
+Inertia: 1816912.875
+Homogeneity score: 0.7365330512499944
+Accuracy: 0.10248333333333333
+
+Number of Clusters: 144
+Inertia: 1633745.875
+Homogeneity score: 0.7982088109533748
+Accuracy: 0.10348333333333333
+
+Number of Clusters: 256
+Inertia: 1517294.5
+Homogeneity score: 0.8384997758424939
+Accuracy: 0.095
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="austinyhc/blog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/blog/machine%20learning/vision/2021/03/17/K-Means-Clustering-for-Images.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/blog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/blog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/blog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Thoughts when I am building</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/austinyhc" title="austinyhc"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/austinyht" title="austinyht"><svg class="svg-icon grey"><use xlink:href="/blog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
